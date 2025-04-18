@@ -11,20 +11,12 @@ const exampleAnalyses = [
     alt: "Woman in olive green wrap dress with brown boots against stone wall"
   },
   {
-    imageSrc: "/lovable-uploads/4473c895-58aa-4006-842d-d42706bc4eec.png",
-    score: 88,
-    styleCore: "Modern Minimalist",
-    whatsWorking: "Clean lines and neutral palette create a sophisticated silhouette. The monochromatic approach shows confidence in simplicity.",
-    elevationTip: "Consider adding a delicate gold chain necklace to bring warmth to the neckline while maintaining the minimal aesthetic.",
-    alt: "Modern minimalist outfit example"
-  },
-  {
-    imageSrc: "/lovable-uploads/4473c895-58aa-4006-842d-d42706bc4eec.png",
-    score: 94,
-    styleCore: "Urban Bohemian",
-    whatsWorking: "Perfect balance of structure and flow. The dress choice shows understanding of personal style while staying true to current trends.",
-    elevationTip: "Layer with a vintage-inspired leather belt to add more definition and personality to the silhouette.",
-    alt: "Urban bohemian style outfit"
+    imageSrc: "/lovable-uploads/34999fc2-3843-4516-85cf-9ae2914cdeee.png",
+    score: 86,
+    styleCore: "Laidback Parkside Minimalist",
+    whatsWorking: "This look nails effortless skater energy. The layered long-sleeve under the black tee is a classic early-2000s callback that still holds up when styled clean like this. The brown corduroy pants add texture, and the sneakers + backwards cap keep it casual without slipping into \"messy.\"",
+    elevationTip: "Consider swapping the white long sleeve for a soft gray or off-white to add visual contrast — or a subtle graphic that adds identity. Even a colored sock peek could add just enough detail to pop.",
+    alt: "Skater in black tee over white long sleeve with brown corduroy pants"
   }
 ];
 
@@ -35,7 +27,7 @@ export const ExampleAnalyses = () => {
         <h2 className="text-2xl md:text-3xl font-satoshi font-bold text-center mb-12">
           See DresAI in Action
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {exampleAnalyses.map((analysis, index) => (
             <Card 
               key={index} 
