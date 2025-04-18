@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button"; // Add this import
 import { ChevronDown } from "lucide-react";
 
 const faqs = [
@@ -59,6 +60,7 @@ export const FAQ = () => {
           ))}
         </Accordion>
       </div>
+      
       <div className="mt-12 text-center">
         <Button
           className="bg-lilac hover:bg-lilac/90 text-white font-medium rounded-full px-8 py-6 text-lg h-auto hover:scale-105 transition-all"
