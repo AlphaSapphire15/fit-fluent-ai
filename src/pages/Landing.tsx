@@ -24,21 +24,6 @@ const Landing = () => {
         <HeroSection />
         <HowItWorks />
         <ExampleAnalyses />
-
-        {/* Mock Score Card */}
-        <section className="px-4 mb-16">
-          <div className="glass-card max-w-sm mx-auto rounded-xl p-6 flex flex-col items-center">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-lilac/20 to-lilac flex items-center justify-center mb-4 border border-lilac/40">
-              <span className="text-2xl font-bold">84</span>
-              <span className="text-sm">/100</span>
-            </div>
-            <h3 className="text-lg font-satoshi font-bold mb-1">
-              Street Sleek Nomad
-            </h3>
-            <p className="text-sm text-muted-foreground">Your Style Core</p>
-          </div>
-        </section>
-
         <PricingSection />
 
         {/* CTA Section */}

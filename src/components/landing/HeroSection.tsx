@@ -12,12 +12,8 @@ export const HeroSection = () => {
         Is your outfit <span className="glow-text">actually</span> working?
       </h1>
       <div className="text-center mb-8">
-        <p className="text-lg md:text-xl text-muted-foreground mb-2">
+        <p className="text-lg md:text-xl text-muted-foreground mb-8">
           Get honest AI feedback on your style in seconds.
-        </p>
-        <p className="text-md md:text-lg text-muted-foreground mb-8 max-w-md mx-auto px-4">
-          Upload a photo of your fit, get a score from 0-100, discover your unique Style Core, 
-          and receive smart tips to level up your look.
         </p>
       </div>
 
