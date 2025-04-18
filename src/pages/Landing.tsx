@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Upload, CreditCard, Zap, MessageCircle } from "lucide-react";
+import { Camera, Wand2, Award, Sparkles, TrendingUp, Upload, CreditCard, Zap, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Landing = () => {
@@ -30,6 +30,29 @@ const Landing = () => {
     }
   ];
 
+  const steps = [
+    {
+      icon: Camera,
+      title: "Upload",
+      description: "Snap a photo of your outfit or upload an existing one"
+    },
+    {
+      icon: Wand2,
+      title: "Analyze",
+      description: "Our AI analyzes your style elements, colors, and proportions"
+    },
+    {
+      icon: Award,
+      title: "Score",
+      description: "Get your style score and discover your unique Style Core identity"
+    },
+    {
+      icon: Sparkles,
+      title: "Improve",
+      description: "Receive personalized tips to elevate your look"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <main className="flex-1">
@@ -38,7 +61,7 @@ const Landing = () => {
           <img 
             src="/lovable-uploads/3f98984f-55db-43ca-8154-6e5bb669d40d.png" 
             alt="DresAI Logo" 
-            className="h-12 md:h-16"
+            className="h-24 md:h-32" // Increased logo size
           />
         </div>
 
@@ -78,6 +101,35 @@ const Landing = () => {
           >
             Analyze My Fit
           </Button>
+        </section>
+
+        {/* How it Works */}
+        <section className="px-4 py-16 bg-muted/20">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-satoshi font-bold text-center mb-12">
+              How It Works
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+              {/* Connecting Lines */}
+              <div className="hidden md:block absolute top-24 left-1/4 right-1/4 h-[2px] bg-gradient-to-r from-lilac/20 via-lilac/40 to-lilac/20" />
+              
+              {steps.map((step, index) => (
+                <div key={index} className="flex flex-col items-center text-center relative">
+                  <div className="w-16 h-16 rounded-full bg-lilac/10 flex items-center justify-center mb-6 relative z-10 border border-lilac/20">
+                    <step.icon className="w-8 h-8 text-lilac" />
+                  </div>
+                  <h3 className="text-lg font-satoshi font-medium mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground max-w-[200px]">
+                    {step.description}
+                  </p>
+                  {/* Mobile Connector */}
+                  {index < steps.length - 1 && (
+                    <div className="md:hidden h-16 w-[2px] my-4 bg-gradient-to-b from-lilac/40 to-lilac/10" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         {/* Example Analyses Section */}
@@ -127,35 +179,6 @@ const Landing = () => {
               Street Sleek Nomad
             </h3>
             <p className="text-sm text-muted-foreground">Your Style Core</p>
-          </div>
-        </section>
-
-        {/* How it Works */}
-        <section className="px-4 py-12 bg-muted/20">
-          <div className="max-w-md mx-auto">
-            <h2 className="text-2xl font-satoshi font-bold text-center mb-8">
-              How It Works
-            </h2>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-lilac/10 flex items-center justify-center mb-3">
-                  <Upload size={20} className="text-lilac" />
-                </div>
-                <p className="text-sm">Upload</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-lilac/10 flex items-center justify-center mb-3">
-                  <CreditCard size={20} className="text-lilac" />
-                </div>
-                <p className="text-sm">Pay</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-lilac/10 flex items-center justify-center mb-3">
-                  <TrendingUp size={20} className="text-lilac" />
-                </div>
-                <p className="text-sm">Get Feedback</p>
-              </div>
-            </div>
           </div>
         </section>
 
