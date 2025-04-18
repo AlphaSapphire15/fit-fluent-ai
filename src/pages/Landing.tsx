@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
@@ -18,7 +17,7 @@ const Landing = () => {
           <img 
             src="/lovable-uploads/3b00c8fa-f005-4603-977e-b78b8c890067.png" 
             alt="DresAI Logo" 
-            className="h-24 md:h-32 object-contain"
+            className="h-16 md:h-20 object-contain"
           />
         </div>
 
