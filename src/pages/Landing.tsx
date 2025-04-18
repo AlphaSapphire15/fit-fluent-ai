@@ -15,24 +15,38 @@ const Landing = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  const scrollToPricing = () => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <main className="flex-1">
-        {/* Logo */}
-        <div className="flex justify-center mb-8 mt-4">
+      <header className="sticky top-0 z-50 backdrop-blur-lg bg-background/80 border-b border-white/10">
+        <div className="flex justify-between items-center px-4 py-3 max-w-6xl mx-auto">
           <img 
             src="/lovable-uploads/3b00c8fa-f005-4603-977e-b78b8c890067.png" 
             alt="DresAI Logo" 
-            className="h-16 md:h-20 object-contain"
+            className="h-8 md:h-10 object-contain"
           />
+          <Button 
+            variant="ghost" 
+            onClick={scrollToPricing}
+            className="text-sm hover:text-lilac"
+          >
+            Pricing
+          </Button>
         </div>
+      </header>
 
+      <main className="flex-1">
         <HeroSection />
         <HowItWorks />
         <PerfectFor />
         <ExampleAnalyses />
         <Testimonials />
-        <PricingSection />
+        <div id="pricing">
+          <PricingSection />
+        </div>
         <FAQ />
       </main>
 

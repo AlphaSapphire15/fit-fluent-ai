@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +8,6 @@ import { StyleProvider } from "./contexts/StyleContext";
 // Pages
 import Landing from "./pages/Landing";
 import Upload from "./pages/Upload";
-import Payment from "./pages/Payment";
 import Loading from "./pages/Loading";
 import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
@@ -26,7 +24,6 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/upload" element={<Upload />} />
-            <Route path="/payment" element={<Payment />} />
             <Route path="/loading" element={<Loading />} />
             <Route path="/results" element={<Results />} />
             <Route path="*" element={<NotFound />} />
