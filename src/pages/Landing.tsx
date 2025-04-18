@@ -1,7 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Upload, CreditCard, Zap, BrandTiktok } from "lucide-react";
+import { TrendingUp, Upload, CreditCard, Zap, MessageCircle } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -154,7 +154,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="py-8 border-t border-white/10">
         <div className="max-w-md mx-auto px-4 flex items-center justify-center">
-          <BrandTiktok size={20} className="mr-2 text-lilac" />
+          <MessageCircle size={20} className="mr-2 text-lilac" />
           <span className="text-sm text-muted-foreground">Seen us on your FYP?</span>
         </div>
         <div className="text-center mt-4 text-xs text-muted-foreground">
