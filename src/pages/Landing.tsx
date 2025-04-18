@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Upload, CreditCard, Zap, MessageCircle } from "lucide-react";
@@ -14,13 +13,20 @@ const Landing = () => {
           <h1 className="text-4xl md:text-5xl font-satoshi font-bold mb-4 leading-tight">
             Is your outfit <span className="glow-text">actually</span> working?
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-md">
-            Upload your fit. Get scored. Level up your look.
-          </p>
+          <div className="text-center mb-4">
+            <p className="text-lg md:text-xl text-muted-foreground mb-2">
+              Get honest AI feedback on your style in seconds.
+            </p>
+            <p className="text-md md:text-lg text-muted-foreground mb-8 max-w-md mx-auto px-4">
+              Upload a photo of your fit, get a score from 0-100, discover your unique Style Core, 
+              and receive smart tips to level up your look.
+            </p>
+          </div>
           <Button 
             onClick={() => navigate('/upload')} 
             size="lg" 
-            className="bg-lilac hover:bg-lilac/90 text-white font-medium rounded-full px-8 py-6 text-lg h-auto animate-pulse transition-all duration-300"
+            className="bg-lilac hover:bg-lilac/90 text-white font-medium rounded-full px-8 py-6 text-lg h-auto animate-pulse transition-all duration-300 
+              shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
           >
             Analyze My Fit
           </Button>
