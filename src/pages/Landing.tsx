@@ -16,9 +16,9 @@ const Landing = () => {
         {/* Logo */}
         <div className="flex justify-center mb-8 mt-4">
           <img 
-            src="/lovable-uploads/3f98984f-55db-43ca-8154-6e5bb669d40d.png" 
+            src="/lovable-uploads/3b00c8fa-f005-4603-977e-b78b8c890067.png" 
             alt="DresAI Logo" 
-            className="h-24 md:h-32"
+            className="h-24 md:h-32 object-contain"
           />
         </div>
 
