@@ -1,6 +1,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -49,6 +50,30 @@
     @apply bg-background text-foreground antialiased scroll-smooth;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins font-bold;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl leading-tight;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  h2 {
+    @apply text-2xl md:text-3xl lg:text-4xl leading-tight mb-8;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl font-semibold;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  p {
+    @apply text-base md:text-lg;
+  }
 }
 
 @layer utilities {
@@ -62,6 +87,17 @@
   
   .glow-text {
     @apply text-transparent bg-clip-text bg-gradient-to-r from-lilac via-lilac/80 to-neonBlue;
+  }
+
+  .cta-button {
+    @apply bg-gradient-to-r from-lilac to-neonBlue text-white font-medium rounded-full 
+    px-8 py-5 text-lg h-auto shadow-[0_0_15px_rgba(167,139,250,0.4)] 
+    hover:shadow-[0_0_25px_rgba(167,139,250,0.6)] 
+    hover:scale-105 transition-all duration-300;
+  }
+
+  .heading-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-lilac/90;
   }
 }
 
@@ -96,5 +132,12 @@
   }
   75% {
     transform: translate(25%, -25%);
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .cta-button {
+    @apply w-full max-w-sm px-6 py-4 text-base;
   }
 }

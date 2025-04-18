@@ -1,11 +1,13 @@
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button"; // Add this import
-import { ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const faqs = [
   {
@@ -39,10 +41,13 @@ const faqs = [
 ];
 
 export const FAQ = () => {
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
   return (
     <section className="px-4 py-16">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-satoshi font-bold text-center mb-12">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-poppins font-bold text-center mb-12 heading-gradient">
           Frequently Asked Questions
         </h2>
         <Accordion type="single" collapsible className="space-y-4">
@@ -52,7 +57,7 @@ export const FAQ = () => {
               value={`item-${index}`}
               className="border border-border/50 rounded-lg px-6 py-2"
             >
-              <AccordionTrigger>{faq.question}</AccordionTrigger>
+              <AccordionTrigger className="font-medium text-base md:text-lg">{faq.question}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {faq.answer}
               </AccordionContent>
@@ -63,8 +68,10 @@ export const FAQ = () => {
       
       <div className="mt-12 text-center">
         <Button
-          className="bg-lilac hover:bg-lilac/90 text-white font-medium rounded-full px-8 py-6 text-lg h-auto hover:scale-105 transition-all"
-          onClick={() => window.location.href = '/upload'}
+          variant="gradient"
+          size={isMobile ? "lg" : "xl"}
+          className="rounded-full font-medium w-full max-w-xs md:max-w-md"
+          onClick={() => navigate('/upload')}
         >
           Get Started
         </Button>

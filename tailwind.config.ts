@@ -21,7 +21,8 @@ export default {
 		extend: {
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
-				satoshi: ['Satoshi', 'sans-serif']
+				satoshi: ['Satoshi', 'sans-serif'],
+				poppins: ['Poppins', 'sans-serif']
 			},
 			colors: {
 				border: 'hsl(var(--border))',

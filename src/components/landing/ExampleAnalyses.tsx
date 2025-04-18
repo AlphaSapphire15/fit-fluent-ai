@@ -1,5 +1,8 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const exampleAnalyses = [
   {
@@ -21,10 +24,13 @@ const exampleAnalyses = [
 ];
 
 export const ExampleAnalyses = () => {
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
   return (
     <section className="px-4 py-16 bg-muted/5">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-satoshi font-bold text-center mb-12">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-poppins font-bold text-center mb-8 heading-gradient">
           See DresAI in Action
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -48,7 +54,7 @@ export const ExampleAnalyses = () => {
                   </div>
                 </div>
                 <div className="p-6 space-y-4">
-                  <h3 className="text-xl font-satoshi font-bold text-lilac">
+                  <h3 className="text-xl font-poppins font-bold text-lilac">
                     {analysis.styleCore}
                   </h3>
                   <div>
@@ -67,6 +73,17 @@ export const ExampleAnalyses = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+        
+        <div className="mt-12 text-center">
+          <Button 
+            onClick={() => navigate('/upload')} 
+            variant="gradient"
+            size={isMobile ? "lg" : "xl"}
+            className="rounded-full font-medium w-full max-w-xs md:max-w-md"
+          >
+            Find Your Style Core
+          </Button>
         </div>
       </div>
     </section>

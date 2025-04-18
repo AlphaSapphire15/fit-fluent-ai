@@ -1,6 +1,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Quote } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const testimonials = [
   {
@@ -33,10 +36,13 @@ const testimonials = [
 ];
 
 export const Testimonials = () => {
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
   return (
     <section className="px-4 py-16 bg-muted/5">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-satoshi font-bold text-center mb-12">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-poppins font-bold text-center mb-12 heading-gradient">
           What Our Users Say
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -54,7 +60,7 @@ export const Testimonials = () => {
                     className="w-16 h-16 rounded-full object-cover"
                   />
                   <div>
-                    <h3 className="font-semibold">{testimonial.name}</h3>
+                    <h3 className="font-semibold font-poppins">{testimonial.name}</h3>
                     <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>
@@ -79,6 +85,17 @@ export const Testimonials = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+        
+        <div className="mt-12 text-center">
+          <Button 
+            onClick={() => navigate('/upload')} 
+            variant="gradient"
+            size={isMobile ? "lg" : "xl"} 
+            className="rounded-full font-medium w-full max-w-xs md:max-w-md"
+          >
+            Join Them Today
+          </Button>
         </div>
       </div>
     </section>
