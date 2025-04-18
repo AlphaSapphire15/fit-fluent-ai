@@ -1,4 +1,3 @@
-
 import {
   Accordion,
   AccordionContent,
@@ -52,16 +51,21 @@ export const FAQ = () => {
               value={`item-${index}`}
               className="border border-border/50 rounded-lg px-6 py-2"
             >
-              <AccordionTrigger className="hover:no-underline">
-                <span className="text-left">{faq.question}</span>
-                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
-              </AccordionTrigger>
+              <AccordionTrigger>{faq.question}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
+      </div>
+      <div className="mt-12 text-center">
+        <Button
+          className="bg-lilac hover:bg-lilac/90 text-white font-medium rounded-full px-8 py-6 text-lg h-auto hover:scale-105 transition-all"
+          onClick={() => window.location.href = '/upload'}
+        >
+          Get Started
+        </Button>
       </div>
     </section>
   );

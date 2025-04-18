@@ -1,10 +1,10 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ExampleAnalyses } from "@/components/landing/ExampleAnalyses";
+import { PerfectFor } from "@/components/landing/PerfectFor";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { FAQ } from "@/components/landing/FAQ";
@@ -26,21 +26,27 @@ const Landing = () => {
 
         <HeroSection />
         <HowItWorks />
+        <PerfectFor />
         <ExampleAnalyses />
-        <Testimonials />
-        <PricingSection />
-        <FAQ />
-
-        {/* CTA Section */}
-        <section className="px-4 py-12 flex flex-col items-center">
+        <div className="text-center py-8">
           <Button 
             onClick={() => navigate('/upload')} 
-            size="lg" 
-            className="bg-lilac hover:bg-lilac/90 text-white font-medium rounded-full px-8 py-6 text-lg h-auto"
+            className="bg-lilac hover:bg-lilac/90 text-white font-medium rounded-full px-8 py-6 text-lg h-auto hover:scale-105 transition-all"
           >
-            Analyze My Fit
+            Find Your Style Core
           </Button>
-        </section>
+        </div>
+        <Testimonials />
+        <div className="text-center py-8">
+          <Button 
+            onClick={() => navigate('/upload')} 
+            className="bg-lilac hover:bg-lilac/90 text-white font-medium rounded-full px-8 py-6 text-lg h-auto hover:scale-105 transition-all"
+          >
+            Join Them Today
+          </Button>
+        </div>
+        <PricingSection />
+        <FAQ />
       </main>
 
       {/* Footer */}
