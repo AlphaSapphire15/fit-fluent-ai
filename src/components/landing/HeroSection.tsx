@@ -1,16 +1,12 @@
 
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Camera } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-
-  const handleUploadClick = () => {
-    navigate('/upload');
-  };
 
   return (
     <section className="px-4 pt-8 pb-12 md:pb-20 flex flex-col items-center text-center">
@@ -23,30 +19,33 @@ export const HeroSection = () => {
         </p>
       </div>
 
-      {/* Drop Zone - Made clickable */}
-      <div 
-        onClick={handleUploadClick}
-        className="w-full max-w-md mb-8 glass-card rounded-xl p-8 border border-lilac/20 hover:border-lilac/40 transition-all duration-300 cursor-pointer"
-      >
-        <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full bg-lilac/10 flex items-center justify-center mb-4">
-            <Upload className="w-8 h-8 text-lilac" />
-          </div>
-          <h3 className="text-lg font-medium mb-2">Drop your photo here</h3>
-          <p className="text-sm text-muted-foreground">
-            or click to browse files
-          </p>
-        </div>
-      </div>
-
       <Button 
         onClick={() => navigate('/upload')} 
         variant="gradient"
         size={isMobile ? "lg" : "xl"}
-        className="rounded-full font-medium shadow-[0_0_15px_rgba(167,139,250,0.4)] w-full max-w-xs md:max-w-md"
+        className="rounded-full font-medium shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_25px_rgba(167,139,250,0.6)] w-full max-w-xs md:max-w-md mb-12"
       >
-        Analyze My Fit
+        <Camera className="mr-2 w-5 h-5" />
+        Upload Your Look
       </Button>
+
+      {/* Before/After Comparison */}
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
+          <div className="flex-1 w-full">
+            <div className="relative rounded-xl overflow-hidden">
+              <img 
+                src="/lovable-uploads/6f6384ff-9e6a-477e-8923-15605aceb5fa.png" 
+                alt="Before and After style transformation"
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
+        </div>
+        <p className="text-lg text-center mt-4 text-muted-foreground">
+          See how DresAI can transform your fit
+        </p>
+      </div>
     </section>
   );
 };

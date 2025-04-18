@@ -1,15 +1,18 @@
 
-import { CreditCard, Zap, CheckCircle2 } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export const PricingSection = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   return (
-    <section className="px-4 py-16 bg-muted/10">
+    <section className="px-4 py-16 bg-muted/10" id="pricing">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl md:text-3xl lg:text-4xl font-poppins font-bold text-center mb-12 heading-gradient">
-          Simple Pricing
+          Choose Your Plan
         </h2>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-6 justify-center`}>
           {/* One-time Card */}
@@ -22,28 +25,23 @@ export const PricingSection = () => {
               <div className="text-2xl font-bold text-lilac">$3</div>
             </div>
             <ul className="mb-6 space-y-3">
-              <li className="flex items-center text-sm">
-                <CheckCircle2 size={18} className="text-lilac mr-2 flex-shrink-0" />
-                <span>Full style analysis</span>
-              </li>
-              <li className="flex items-center text-sm">
-                <CheckCircle2 size={18} className="text-lilac mr-2 flex-shrink-0" />
-                <span>Style core identification</span>
-              </li>
-              <li className="flex items-center text-sm">
-                <CheckCircle2 size={18} className="text-lilac mr-2 flex-shrink-0" />
-                <span>Customized improvement tips</span>
+              <li className="flex items-center text-sm gap-2">
+                <CreditCard size={18} className="text-lilac" />
+                <span>Single outfit analysis</span>
               </li>
             </ul>
-            <button className="w-full py-3 rounded-lg border border-lilac/50 bg-background/50 text-lilac hover:bg-lilac/10 transition-colors">
-              Choose Plan
-            </button>
+            <Button 
+              onClick={() => navigate('/upload')}
+              className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto rounded-full"
+            >
+              Choose One-Time Plan
+            </Button>
           </div>
           
           {/* Subscription Card */}
           <div className="glass-card rounded-xl p-6 hover:glow-border transition-all duration-300 relative overflow-hidden flex-1">
             <div className="absolute top-0 right-0 bg-gradient-to-r from-lilac to-neonBlue text-xs px-3 py-1 font-medium text-white">
-              POPULAR
+              BEST VALUE
             </div>
             <div className="flex justify-between items-start mb-6">
               <div>
@@ -56,26 +54,17 @@ export const PricingSection = () => {
               </div>
             </div>
             <ul className="mb-6 space-y-3">
-              <li className="flex items-center text-sm">
-                <CheckCircle2 size={18} className="text-lilac mr-2 flex-shrink-0" />
-                <span>Unlimited style analyses</span>
-              </li>
-              <li className="flex items-center text-sm">
-                <CheckCircle2 size={18} className="text-lilac mr-2 flex-shrink-0" />
-                <span>Compare different outfits</span>
-              </li>
-              <li className="flex items-center text-sm">
-                <CheckCircle2 size={18} className="text-lilac mr-2 flex-shrink-0" />
-                <span>Track your style evolution</span>
-              </li>
-              <li className="flex items-center text-sm">
-                <CheckCircle2 size={18} className="text-lilac mr-2 flex-shrink-0" />
-                <span>Premium feedback options</span>
+              <li className="flex items-center text-sm gap-2">
+                <CreditCard size={18} className="text-lilac" />
+                <span>Unlimited outfit analyses</span>
               </li>
             </ul>
-            <button className="w-full py-3 rounded-lg bg-gradient-to-r from-lilac to-neonBlue text-white font-medium hover:shadow-[0_0_15px_rgba(167,139,250,0.5)] transition-all">
-              Start Free Trial
-            </button>
+            <Button 
+              onClick={() => navigate('/upload')}
+              className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
+            >
+              Choose Unlimited Plan
+            </Button>
           </div>
         </div>
       </div>

@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -63,6 +62,31 @@ Suggestion: ${results.suggestion}
           alt="Your outfit"
           className="w-40 h-40 object-cover rounded-lg border border-white/10"
         />
+      </div>
+
+      {/* Style Analysis */}
+      <div className="glass-card rounded-xl p-6 mb-6">
+        <h3 className="font-satoshi font-bold text-lg mb-4">What's Working</h3>
+        <ul className="space-y-3">
+          {results?.strengths?.map((strength, index) => (
+            <li key={index} className="flex items-start gap-2">
+              <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
+              <span>{strength}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="glass-card rounded-xl p-6 mb-6">
+        <h3 className="font-satoshi font-bold text-lg mb-4">Tips to Elevate</h3>
+        <ul className="space-y-3">
+          {results?.improvements?.map((improvement, index) => (
+            <li key={index} className="flex items-start gap-2">
+              <Sparkles size={18} className="text-lilac shrink-0 mt-0.5" />
+              <span>{improvement}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* Score Circle */}
