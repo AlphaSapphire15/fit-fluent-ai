@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
@@ -5,6 +6,8 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ExampleAnalyses } from "@/components/landing/ExampleAnalyses";
 import { PricingSection } from "@/components/landing/PricingSection";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { FAQ } from "@/components/landing/FAQ";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -24,7 +27,9 @@ const Landing = () => {
         <HeroSection />
         <HowItWorks />
         <ExampleAnalyses />
+        <Testimonials />
         <PricingSection />
+        <FAQ />
 
         {/* CTA Section */}
         <section className="px-4 py-12 flex flex-col items-center">
