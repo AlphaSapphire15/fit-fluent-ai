@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+				satoshi: ['Satoshi', 'sans-serif']
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -61,6 +66,16 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				lilac: {
+					DEFAULT: '#A78BFA',
+					light: '#C4B5FD',
+					dark: '#7C3AED'
+				},
+				neonBlue: {
+					DEFAULT: '#60A5FA', 
+					light: '#93C5FD',
+					dark: '#3B82F6'
 				}
 			},
 			borderRadius: {
@@ -70,25 +85,38 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				pulse: {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.7' }
+				},
+				glow: {
+					'0%, 100%': { 
+						boxShadow: '0 0 10px rgba(167, 139, 250, 0.3)',
+						opacity: '0.9'
 					},
-					to: {
-						height: '0'
+					'50%': { 
+						boxShadow: '0 0 20px rgba(167, 139, 250, 0.6)',
+						opacity: '1'
 					}
+				},
+				'score-circle': {
+					'0%': { strokeDasharray: '0, 100' },
+					'100%': { strokeDasharray: 'var(--score-value), 100' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'glow': 'glow 2s ease-in-out infinite',
+				'score-circle': 'score-circle 1.5s ease-out forwards'
 			}
 		}
 	},
