@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Upload as UploadIcon } from "lucide-react";
@@ -67,8 +68,9 @@ const Upload = () => {
 
   const toneOptions = [
     { value: "chill", label: "Chill", description: "Laid back and friendly" },
-    { value: "straightforward", label: "Straightforward", description: "Clear and direct" },
-    { value: "creative", label: "Creative", description: "Artful and expressive" },
+    { value: "snarky", label: "Snarky", description: "Witty with a bit of attitude" },
+    { value: "clean", label: "Clean", description: "Direct and professional" },
+    { value: "poetic", label: "Poetic", description: "Artful and expressive" },
   ];
 
   const handleContinue = () => {
@@ -150,12 +152,12 @@ const Upload = () => {
       </div>
 
       <div className="mb-10">
-        <h2 className="text-lg font-medium mb-4">How would you like your feedback?</h2>
+        <h2 className="text-lg font-medium mb-3">Select Feedback Tone</h2>
         <RadioGroup value={tone} onValueChange={(value) => setTone(value as any)}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {toneOptions.map((option) => (
               <div key={option.value} className="space-y-2">
-                <div className={`glass-card rounded-full p-4 cursor-pointer border-2 transition-all hover:border-lilac/30 ${tone === option.value ? "border-lilac" : "border-transparent"}`}>
+                <div className={`glass-card rounded-lg p-4 cursor-pointer border-2 transition-all hover:border-lilac/30 ${tone === option.value ? "border-lilac" : "border-transparent"}`}>
                   <RadioGroupItem
                     value={option.value}
                     id={option.value}
@@ -165,8 +167,8 @@ const Upload = () => {
                     htmlFor={option.value}
                     className="flex flex-col cursor-pointer"
                   >
-                    <span className="font-medium text-center">{option.label}</span>
-                    <span className="text-muted-foreground text-xs mt-1 text-center">
+                    <span className="font-medium">{option.label}</span>
+                    <span className="text-muted-foreground text-xs mt-1">
                       {option.description}
                     </span>
                   </Label>
@@ -175,6 +177,9 @@ const Upload = () => {
             ))}
           </div>
         </RadioGroup>
+        <p className="text-sm text-muted-foreground mt-3">
+          Tone changes how the AI speaks to you
+        </p>
       </div>
 
       <Button
