@@ -9,7 +9,78 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      style_cores: {
+        Row: {
+          base: string
+          created_at: string | null
+          description: string | null
+          flavor: string
+          full_label: string | null
+          id: string
+          lookbook_json: Json | null
+        }
+        Insert: {
+          base: string
+          created_at?: string | null
+          description?: string | null
+          flavor: string
+          full_label?: string | null
+          id?: string
+          lookbook_json?: Json | null
+        }
+        Update: {
+          base?: string
+          created_at?: string | null
+          description?: string | null
+          flavor?: string
+          full_label?: string | null
+          id?: string
+          lookbook_json?: Json | null
+        }
+        Relationships: []
+      }
+      uploads: {
+        Row: {
+          base: string | null
+          created_at: string | null
+          file_hash: string | null
+          flavor: string | null
+          full_label: string | null
+          good_1: string | null
+          good_2: string | null
+          id: string
+          score: number | null
+          tip: string | null
+          user_id: string | null
+        }
+        Insert: {
+          base?: string | null
+          created_at?: string | null
+          file_hash?: string | null
+          flavor?: string | null
+          full_label?: string | null
+          good_1?: string | null
+          good_2?: string | null
+          id?: string
+          score?: number | null
+          tip?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          base?: string | null
+          created_at?: string | null
+          file_hash?: string | null
+          flavor?: string | null
+          full_label?: string | null
+          good_1?: string | null
+          good_2?: string | null
+          id?: string
+          score?: number | null
+          tip?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
