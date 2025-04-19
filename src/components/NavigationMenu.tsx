@@ -14,7 +14,7 @@ export const NavigationMenu = () => {
   const menuItems = [
     { label: "Home", path: "/" },
     { label: "Upload", path: "/upload" },
-    { label: user ? "Sign Out" : "Sign Up", path: "/login" },
+    { label: user ? "Sign Out" : "Sign Up", path: user ? "/login" : "/signup" },
   ];
 
   const handleNavigation = async (path: string) => {

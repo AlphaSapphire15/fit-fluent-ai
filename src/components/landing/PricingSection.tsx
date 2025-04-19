@@ -19,8 +19,8 @@ export const PricingSection = () => {
       setIsLoading(true);
       
       if (!user) {
-        // Redirect to login with return URL that includes plan type
-        navigate(`/login?next=/upload&plan=${type}`);
+        // Redirect to signup with return URL that includes plan type
+        navigate(`/signup?next=/upload&plan=${type}`);
         return;
       }
       
