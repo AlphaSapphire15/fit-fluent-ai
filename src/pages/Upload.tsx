@@ -1,3 +1,6 @@
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import React, { useRef, useState } from "react";
 import { Camera, Upload as UploadIcon, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import AnalysisResult from "@/components/AnalysisResult";
 
 const Upload = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { tone, setTone } = useStyle();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,6 +27,12 @@ const Upload = () => {
     strengths: string[];
     suggestion: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login?next=/upload");
+    }
+  }, [user, navigate]);
 
   const resetState = () => {
     setPreview(null);
