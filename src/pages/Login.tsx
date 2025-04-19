@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/PageContainer";
 import { ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const { user, login, loginWithEmail } = useAuth();
@@ -16,6 +17,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { toast } = useToast();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +70,7 @@ const Login = () => {
           
           <Button 
             type="submit"
-            className="w-full"
+            className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
             disabled={loading}
           >
             {loading ? "Signing in..." : "Sign in with Email"}

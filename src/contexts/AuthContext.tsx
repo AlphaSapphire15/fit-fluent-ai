@@ -3,12 +3,14 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   login: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -18,11 +20,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("Auth state changed", event, session);
         setSession(session);
         setUser(session?.user ?? null);
       }
@@ -54,13 +58,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
+  const signup = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login`
+      }
+    });
+    
+    if (error) throw error;
+    
+    toast({
+      title: "Success!",
+      description: "Check your email to confirm your account.",
+    });
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
     navigate('/');
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, login, loginWithEmail, logout }}>
+    <AuthContext.Provider value={{ user, session, login, loginWithEmail, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

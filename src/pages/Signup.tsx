@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/PageContainer";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
-  const { login, loginWithEmail } = useAuth();
+  const { login, signup } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const nextPath = searchParams.get("next") || "/";
@@ -18,23 +18,17 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
     try {
-      await loginWithEmail(email, password);
-      if (plan) {
-        navigate(`/upload?plan=${plan}`);
-      } else {
-        navigate(nextPath);
-      }
+      await signup(email, password);
+      // We don't navigate here since the user needs to confirm their email
     } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: err.message || "Failed to sign up"
-      });
+      setError(err.message || "Failed to sign up");
     } finally {
       setLoading(false);
     }
@@ -67,6 +61,8 @@ const Signup = () => {
               required
             />
           </div>
+          
+          {error && <p className="text-destructive text-sm">{error}</p>}
           
           <Button 
             type="submit"
