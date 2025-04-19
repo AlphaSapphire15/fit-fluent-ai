@@ -3,22 +3,29 @@ import { CreditCard } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const PricingSection = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePlanSelection = async (type: "one-time" | "subscription") => {
     try {
       setIsLoading(true);
       
-      // Redirect to upload page first
-      navigate('/upload');
+      if (!user) {
+        // Redirect to login with return URL that includes plan type
+        navigate(`/login?next=/upload&plan=${type}`);
+        return;
+      }
+      
+      // If user is logged in, go directly to upload with plan selection
+      navigate(`/upload?plan=${type}`);
       
     } catch (error) {
       console.error("Error selecting plan:", error);
@@ -27,6 +34,7 @@ export const PricingSection = () => {
         description: "There was a problem selecting the plan. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };

@@ -9,18 +9,19 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 export const NavigationMenu = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const menuItems = [
     { label: "Home", path: "/" },
     { label: "Upload", path: "/upload" },
-    { label: user ? "Sign Out" : "Sign In", path: "/login" },
+    { label: user ? "Sign Out" : "Sign Up", path: "/login" },
   ];
 
-  const handleNavigation = (path: string) => {
+  const handleNavigation = async (path: string) => {
     setOpen(false);
     if (path === "/login" && user) {
-      // Handle sign out
+      await logout();
+      navigate("/");
       return;
     }
     navigate(path);
