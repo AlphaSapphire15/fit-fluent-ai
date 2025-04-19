@@ -20,6 +20,16 @@ const styleResults = [
       "Strong color coherence with modern silhouette",
       "Effective balance of casual and refined elements"
     ],
+    strengths: [
+      "Great color coordination",
+      "Good choice of minimal accessories",
+      "Fitted proportions work well with your body type"
+    ],
+    improvements: [
+      "Consider adding one statement piece",
+      "Experiment with slightly bolder footwear",
+      "Try incorporating more texture in your fabrics"
+    ],
     suggestion: "Try adding a textured accessory to add depth to your look."
   },
   {
@@ -29,6 +39,16 @@ const styleResults = [
       "Excellent pattern mixing technique",
       "Well-executed layering approach"
     ],
+    strengths: [
+      "Creative mix of vintage and modern elements",
+      "Thoughtful color story throughout the outfit",
+      "Interesting silhouette created by layering"
+    ],
+    improvements: [
+      "Accessories could be more cohesive with the theme",
+      "Consider tailoring for a more precise fit",
+      "Experiment with complementary color accents"
+    ],
     suggestion: "Consider adjusting proportions slightly for a more balanced silhouette."
   },
   {
@@ -37,6 +57,16 @@ const styleResults = [
     highlights: [
       "Perfect balance of statement and subtle pieces",
       "Outstanding color coordination with advanced tonal play"
+    ],
+    strengths: [
+      "Excellent proportions throughout the outfit",
+      "High-quality pieces that work harmoniously",
+      "Sophisticated use of textures and materials"
+    ],
+    improvements: [
+      "Could experiment with more adventurous accessories",
+      "Try introducing an unexpected color accent",
+      "Consider more dramatic silhouette elements"
     ],
     suggestion: "Experiment with unexpected footwear choices to elevate this look further."
   }

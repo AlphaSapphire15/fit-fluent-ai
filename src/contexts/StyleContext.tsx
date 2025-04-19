@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext } from "react";
 
-type ToneType = "chill" | "snarky" | "clean" | "poetic";
+type ToneType = "chill" | "straightforward" | "creative";
 
 interface StyleContextType {
   image: File | null;
@@ -13,12 +13,16 @@ interface StyleContextType {
     styleCore: string;
     highlights: string[];
     suggestion: string;
+    strengths?: string[];
+    improvements?: string[]; 
   } | null;
   setResults: (results: {
     score: number;
     styleCore: string;
     highlights: string[];
     suggestion: string;
+    strengths?: string[];
+    improvements?: string[];
   } | null) => void;
   resetAll: () => void;
 }
@@ -33,6 +37,8 @@ export const StyleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     styleCore: string;
     highlights: string[];
     suggestion: string;
+    strengths?: string[];
+    improvements?: string[];
   } | null>(null);
 
   const resetAll = () => {

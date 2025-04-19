@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -68,24 +69,42 @@ Suggestion: ${results.suggestion}
       <div className="glass-card rounded-xl p-6 mb-6">
         <h3 className="font-satoshi font-bold text-lg mb-4">What's Working</h3>
         <ul className="space-y-3">
-          {results?.strengths?.map((strength, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
-              <span>{strength}</span>
-            </li>
-          ))}
+          {results.strengths ? (
+            results.strengths.map((strength, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
+                <span>{strength}</span>
+              </li>
+            ))
+          ) : (
+            results.highlights.slice(0, Math.ceil(results.highlights.length / 2)).map((highlight, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
+                <span>{highlight}</span>
+              </li>
+            ))
+          )}
         </ul>
       </div>
 
       <div className="glass-card rounded-xl p-6 mb-6">
         <h3 className="font-satoshi font-bold text-lg mb-4">Tips to Elevate</h3>
         <ul className="space-y-3">
-          {results?.improvements?.map((improvement, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <Sparkles size={18} className="text-lilac shrink-0 mt-0.5" />
-              <span>{improvement}</span>
-            </li>
-          ))}
+          {results.improvements ? (
+            results.improvements.map((improvement, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <Sparkles size={18} className="text-lilac shrink-0 mt-0.5" />
+                <span>{improvement}</span>
+              </li>
+            ))
+          ) : (
+            results.highlights.slice(Math.ceil(results.highlights.length / 2)).map((highlight, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <Sparkles size={18} className="text-lilac shrink-0 mt-0.5" />
+                <span>{highlight}</span>
+              </li>
+            ))
+          )}
         </ul>
       </div>
 
@@ -112,7 +131,7 @@ Suggestion: ${results.suggestion}
               stroke="rgba(167, 139, 250, 0.8)"
               strokeWidth="8"
               strokeLinecap="round"
-              strokeDasharray="0, 100"
+              strokeDasharray="283, 283"
               className="animate-score-circle"
             />
           </svg>
