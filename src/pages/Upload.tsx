@@ -10,6 +10,7 @@ import DragAndDrop from "@/components/upload/DragAndDrop";
 import FeedbackToneSelector from "@/components/upload/FeedbackToneSelector";
 import { useImageAnalysis } from "@/hooks/useImageAnalysis";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Upload = () => {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ const Upload = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const { isAnalyzing, analysisResult, analyzeImage, setAnalysisResult } = useImageAnalysis();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user) {
