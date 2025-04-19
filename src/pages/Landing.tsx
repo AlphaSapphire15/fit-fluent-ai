@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
@@ -10,13 +9,25 @@ import { PricingSection } from "@/components/landing/PricingSection";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { FAQ } from "@/components/landing/FAQ";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { NavigationMenu } from "@/components/NavigationMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Landing = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+
+  const handleUpload = () => {
+    if (!user) {
+      navigate('/login?next=/upload');
+    } else {
+      navigate('/upload');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <NavigationMenu />
       <main className="flex-1">
         {/* Logo */}
         <div className="flex justify-center mb-8 mt-4">

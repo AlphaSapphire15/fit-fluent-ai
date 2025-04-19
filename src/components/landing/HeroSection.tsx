@@ -1,12 +1,21 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+
+  const handleUpload = () => {
+    if (!user) {
+      navigate('/login?next=/upload');
+    } else {
+      navigate('/upload');
+    }
+  };
 
   return (
     <section className="px-4 pt-8 pb-12 md:pb-20 flex flex-col items-center text-center">
@@ -20,7 +29,7 @@ export const HeroSection = () => {
       </div>
 
       <Button 
-        onClick={() => navigate('/upload')} 
+        onClick={handleUpload}
         variant="gradient"
         size={isMobile ? "lg" : "xl"}
         className="rounded-full font-medium shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_25px_rgba(167,139,250,0.6)] w-full max-w-xs md:max-w-md mb-12"
