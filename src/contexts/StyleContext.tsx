@@ -31,7 +31,7 @@ const StyleContext = createContext<StyleContextType | undefined>(undefined);
 
 export const StyleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [image, setImage] = useState<File | null>(null);
-  const [tone, setTone] = useState<ToneType>("clean");
+  const [tone, setTone] = useState<ToneType>("chill");
   const [results, setResults] = useState<{
     score: number;
     styleCore: string;
@@ -43,7 +43,7 @@ export const StyleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const resetAll = () => {
     setImage(null);
-    setTone("clean");
+    setTone("chill");
     setResults(null);
   };
 
