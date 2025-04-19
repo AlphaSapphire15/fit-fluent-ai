@@ -4,23 +4,52 @@ import { Button } from "@/components/ui/button";
 import { CreditCard, Sparkles, Lock, Check } from "lucide-react";
 import PageContainer from "@/components/PageContainer";
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { supabase } from "@/integrations/supabase/client";
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
 
 const Payment = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handlePayment = (type: "one-time" | "subscription") => {
-    // In a real app, this would integrate with Stripe
-    // For this demo, we'll just mock the payment and navigate
-    toast({
-      title: `${type === "one-time" ? "One-time payment" : "Subscription"} selected`,
-      description: "Processing your payment...",
-    });
-    
-    // Navigate to loading screen
-    setTimeout(() => {
-      navigate("/loading");
-    }, 1000);
+  const handlePayment = async (type: "one-time" | "subscription") => {
+    try {
+      setIsLoading(true);
+      
+      // Determine the price ID based on the type
+      const priceId = type === "one-time"
+        ? import.meta.env.VITE_STRIPE_PRICE_ONE_TIME || Deno.env.get("STRIPE_PRICE_ONE_TIME")
+        : import.meta.env.VITE_STRIPE_PRICE_SUB_MONTHLY || Deno.env.get("STRIPE_PRICE_SUB_MONTHLY");
+      
+      // Call the Supabase Edge Function to create a checkout session
+      const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+        body: { priceId },
+      });
+      
+      if (error) {
+        throw new Error(error.message || "Error creating checkout session");
+      }
+      
+      if (!data?.url) {
+        throw new Error("No checkout URL returned");
+      }
+      
+      // Redirect to the Stripe Checkout page
+      window.location.href = data.url;
+      
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Payment Error",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,8 +92,9 @@ const Payment = () => {
           <Button
             onClick={() => handlePayment("one-time")}
             className="w-full bg-white text-primary hover:bg-white/90 text-sm font-medium"
+            disabled={isLoading}
           >
-            Choose One-Time Scan
+            {isLoading ? "Processing..." : "Choose One-Time Scan"}
           </Button>
         </div>
 
@@ -107,8 +137,9 @@ const Payment = () => {
           <Button
             onClick={() => handlePayment("subscription")}
             className="w-full bg-lilac hover:bg-lilac/90 text-white text-sm font-medium"
+            disabled={isLoading}
           >
-            Start Unlimited Plan
+            {isLoading ? "Processing..." : "Start Unlimited Plan"}
           </Button>
         </div>
       </div>

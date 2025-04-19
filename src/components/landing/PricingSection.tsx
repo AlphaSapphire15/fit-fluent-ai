@@ -3,10 +3,33 @@ import { CreditCard } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 export const PricingSection = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handlePlanSelection = async (type: "one-time" | "subscription") => {
+    try {
+      setIsLoading(true);
+      
+      // Redirect to upload page first
+      navigate('/upload');
+      
+    } catch (error) {
+      console.error("Error selecting plan:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem selecting the plan. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
 
   return (
     <section className="px-4 py-16 bg-muted/10" id="pricing">
@@ -31,10 +54,11 @@ export const PricingSection = () => {
               </li>
             </ul>
             <Button 
-              onClick={() => navigate('/upload')}
+              onClick={() => handlePlanSelection("one-time")}
               className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto rounded-full"
+              disabled={isLoading}
             >
-              Choose One-Time Plan
+              {isLoading ? "Processing..." : "Choose One-Time Plan"}
             </Button>
           </div>
           
@@ -60,10 +84,11 @@ export const PricingSection = () => {
               </li>
             </ul>
             <Button 
-              onClick={() => navigate('/upload')}
+              onClick={() => handlePlanSelection("subscription")}
               className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
+              disabled={isLoading}
             >
-              Choose Unlimited Plan
+              {isLoading ? "Processing..." : "Choose Unlimited Plan"}
             </Button>
           </div>
         </div>
