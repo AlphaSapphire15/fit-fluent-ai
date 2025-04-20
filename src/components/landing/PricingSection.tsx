@@ -4,8 +4,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export const PricingSection = () => {
   const isMobile = useIsMobile();
@@ -18,14 +19,35 @@ export const PricingSection = () => {
     try {
       setIsLoading(true);
       
+      // If user is not logged in, redirect to signup with return URL
       if (!user) {
-        // Redirect to signup with return URL that includes plan type
-        navigate(`/signup?next=/upload&plan=${type}`);
+        navigate(`/signup?next=payment&plan=${type}`);
         return;
       }
+
+      // Determine which price ID to use
+      const priceId = type === "one-time" 
+        ? Deno.env.get("STRIPE_PRICE_ONE_TIME")
+        : Deno.env.get("STRIPE_PRICE_SUBSCRIPTION");
       
-      // If user is logged in, go directly to upload with plan selection
-      navigate(`/upload?plan=${type}`);
+      console.log("Selected plan:", type, "with priceId:", priceId);
+      
+      // Create checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId }
+      });
+
+      if (error) {
+        console.error("Error creating checkout session:", error);
+        throw new Error("Failed to create checkout session");
+      }
+
+      if (data?.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
       
     } catch (error) {
       console.error("Error selecting plan:", error);

@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Camera, Upload as UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -18,8 +18,17 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
   openFileInput,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = React.useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if device is mobile
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    };
+    checkMobile();
+  }, []);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -51,26 +60,38 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
     }
   };
 
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onFileChange(file);
+    }
+  };
+
   const handleTakePhoto = () => {
     if (!fileInputRef.current) return;
     
-    // Set accept attribute to capture from camera when possible
-    fileInputRef.current.setAttribute('capture', 'environment');
-    fileInputRef.current.setAttribute('accept', 'image/*');
-    fileInputRef.current.click();
+    if (isMobile) {
+      // For mobile devices, use camera
+      fileInputRef.current.setAttribute('capture', 'environment');
+      fileInputRef.current.setAttribute('accept', 'image/*');
+    } else {
+      // For desktop, just open file picker with image filter
+      fileInputRef.current.removeAttribute('capture');
+      fileInputRef.current.setAttribute('accept', 'image/*');
+      
+      toast({
+        title: "Desktop detected",
+        description: "Opening file browser since camera may not be available.",
+      });
+    }
     
-    // Reset to normal file input afterwards
-    setTimeout(() => {
-      if (fileInputRef.current) {
-        fileInputRef.current.removeAttribute('capture');
-      }
-    }, 1000);
+    fileInputRef.current.click();
   };
 
   return (
     <div
       className={`glass-card rounded-xl p-4 mb-6 ${
-        isDragging ? "glow-border" : ""
+        isDragging ? "border-2 border-lilac glow-border" : ""
       } ${!preview ? "h-64" : ""}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -90,23 +111,23 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
               variant="outline"
               size="sm"
               onClick={openFileInput}
-              className="text-sm"
+              className="text-sm hover:bg-lilac/10 hover:border-lilac/30"
             >
               Browse Files
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
-              className="text-sm"
+              className="text-sm hover:bg-lilac/10 hover:border-lilac/30"
               onClick={handleTakePhoto}
             >
-              <Camera size={14} className="mr-1" /> Take Photo
+              <Camera size={14} className="mr-1" /> {isMobile ? "Take Photo" : "Choose Image"}
             </Button>
           </div>
           <input
             type="file"
             ref={fileInputRef}
-            onChange={(e) => e.target.files?.[0] && onFileChange(e.target.files[0])}
+            onChange={handleFileInputChange}
             accept="image/*"
             className="hidden"
           />

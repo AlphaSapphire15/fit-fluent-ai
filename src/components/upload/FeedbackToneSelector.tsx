@@ -23,11 +23,10 @@ const FeedbackToneSelector: React.FC<FeedbackToneSelectorProps> = ({ tone, setTo
           {toneOptions.map((option) => (
             <div key={option.value} className="w-full">
               <div 
-                className={`glass-card rounded-full p-4 cursor-pointer border-2 transition-all 
-                  hover:border-lilac/30 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]
+                className={`glass-card rounded-full p-4 cursor-pointer transition-all duration-300
                   ${tone === option.value 
-                    ? "border-lilac shadow-[0_0_15px_rgba(167,139,250,0.5)] bg-lilac/10" 
-                    : "border-transparent"}`}
+                    ? "border-2 border-lilac shadow-[0_0_15px_rgba(167,139,250,0.5)] bg-lilac/10" 
+                    : "border-2 border-transparent hover:border-lilac/30 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]"}`}
               >
                 <RadioGroupItem
                   value={option.value}

@@ -1,7 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useStyle } from "@/contexts/StyleContext";
 import PageContainer from "@/components/PageContainer";
@@ -9,37 +9,35 @@ import AnalysisResult from "@/components/AnalysisResult";
 import DragAndDrop from "@/components/upload/DragAndDrop";
 import FeedbackToneSelector from "@/components/upload/FeedbackToneSelector";
 import { useImageAnalysis } from "@/hooks/useImageAnalysis";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Upload = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const plan = searchParams.get("plan");
+  const sessionId = searchParams.get("session_id");
   const { tone, setTone } = useStyle();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const { isAnalyzing, analysisResult, analyzeImage, setAnalysisResult } = useImageAnalysis();
   const { toast } = useToast();
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
 
   useEffect(() => {
     if (!user) {
       navigate("/login?next=/upload");
+      return;
     }
-  }, [user, navigate]);
 
-  // If user has a plan parameter, show a welcome toast
-  useEffect(() => {
-    if (plan && user) {
+    // If we have a session_id in the URL, show a welcome toast
+    if (sessionId) {
       toast({
-        title: "Welcome to DresAI!",
-        description: plan === "subscription" 
-          ? "You've chosen the Unlimited Plan. Upload as many outfits as you want!" 
-          : "You've chosen the One-Time Scan. Let's analyze your outfit!"
+        title: "Payment Successful!",
+        description: "Your payment was successful. You can now analyze your outfit."
       });
     }
-  }, [plan, user, toast]);
+  }, [user, navigate, sessionId, toast]);
 
   const resetState = () => {
     setPreview(null);
