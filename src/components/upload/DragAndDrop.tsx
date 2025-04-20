@@ -108,17 +108,17 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
           </p>
           <div className="flex gap-3">
             <Button
-              variant="outline"
+              variant="gradient"
               size="sm"
               onClick={openFileInput}
-              className="text-sm hover:bg-lilac/10 hover:border-lilac/30"
+              className="text-sm"
             >
               Browse Files
             </Button>
             <Button 
-              variant="outline" 
+              variant="gradient"
               size="sm" 
-              className="text-sm hover:bg-lilac/10 hover:border-lilac/30"
+              className="text-sm"
               onClick={handleTakePhoto}
             >
               <Camera size={14} className="mr-1" /> {isMobile ? "Take Photo" : "Choose Image"}
@@ -141,9 +141,9 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
           />
           <div className="absolute bottom-3 right-3 flex gap-2">
             <Button
-              variant="secondary"
+              variant="gradient"
               size="sm"
-              className="text-xs"
+              className="text-sm"
               onClick={openFileInput}
             >
               Change Photo

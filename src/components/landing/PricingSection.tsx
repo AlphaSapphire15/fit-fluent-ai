@@ -27,8 +27,8 @@ export const PricingSection = () => {
 
       // Determine which price ID to use
       const priceId = type === "one-time" 
-        ? Deno.env.get("STRIPE_PRICE_ONE_TIME")
-        : Deno.env.get("STRIPE_PRICE_SUBSCRIPTION");
+        ? import.meta.env.VITE_PRICE_ONE_TIME
+        : import.meta.env.VITE_PRICE_SUB_MONTHLY;
       
       console.log("Selected plan:", type, "with priceId:", priceId);
       
