@@ -2,6 +2,7 @@
 import React, { useRef } from "react";
 import { Camera, Upload as UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface DragAndDropProps {
   preview: string | null;
@@ -18,6 +19,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
+  const { toast } = useToast();
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -36,7 +38,33 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
     e.stopPropagation();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) onFileChange(file);
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please upload an image file.",
+        });
+        return;
+      }
+      onFileChange(file);
+    }
+  };
+
+  const handleTakePhoto = () => {
+    if (!fileInputRef.current) return;
+    
+    // Set accept attribute to capture from camera when possible
+    fileInputRef.current.setAttribute('capture', 'environment');
+    fileInputRef.current.setAttribute('accept', 'image/*');
+    fileInputRef.current.click();
+    
+    // Reset to normal file input afterwards
+    setTimeout(() => {
+      if (fileInputRef.current) {
+        fileInputRef.current.removeAttribute('capture');
+      }
+    }, 1000);
   };
 
   return (
@@ -66,7 +94,12 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
             >
               Browse Files
             </Button>
-            <Button variant="outline" size="sm" className="text-sm">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-sm"
+              onClick={handleTakePhoto}
+            >
               <Camera size={14} className="mr-1" /> Take Photo
             </Button>
           </div>
@@ -85,14 +118,16 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
             alt="Preview"
             className="w-full h-auto rounded-lg object-cover aspect-[4/5]"
           />
-          <Button
-            variant="secondary"
-            size="sm"
-            className="absolute bottom-3 right-3 text-xs"
-            onClick={openFileInput}
-          >
-            Change Photo
-          </Button>
+          <div className="absolute bottom-3 right-3 flex gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="text-xs"
+              onClick={openFileInput}
+            >
+              Change Photo
+            </Button>
+          </div>
         </div>
       )}
     </div>

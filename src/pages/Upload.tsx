@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useStyle } from "@/contexts/StyleContext";
@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 const Upload = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const plan = searchParams.get("plan");
   const { tone, setTone } = useStyle();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -26,6 +28,18 @@ const Upload = () => {
       navigate("/login?next=/upload");
     }
   }, [user, navigate]);
+
+  // If user has a plan parameter, show a welcome toast
+  useEffect(() => {
+    if (plan && user) {
+      toast({
+        title: "Welcome to DresAI!",
+        description: plan === "subscription" 
+          ? "You've chosen the Unlimited Plan. Upload as many outfits as you want!" 
+          : "You've chosen the One-Time Scan. Let's analyze your outfit!"
+      });
+    }
+  }, [plan, user, toast]);
 
   const resetState = () => {
     setPreview(null);
@@ -49,7 +63,16 @@ const Upload = () => {
     reader.onload = async (e) => {
       const base64 = (e.target?.result as string).split(',')[1];
       setPreview(e.target?.result as string);
-      await analyzeImage(base64);
+      try {
+        await analyzeImage(base64);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Analysis failed",
+          description: "Please try again with a different image.",
+        });
+        setPreview(null);
+      }
     };
     reader.readAsDataURL(file);
   };

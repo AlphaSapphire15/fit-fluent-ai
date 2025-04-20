@@ -29,6 +29,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("Auth state changed", event, session);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Redirect to upload page after successful login
+        if (event === 'SIGNED_IN') {
+          navigate('/upload');
+        }
       }
     );
 
@@ -39,13 +44,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const login = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/login`
+        redirectTo: `${window.location.origin}/upload`
       }
     });
   };
@@ -56,10 +61,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password
     });
     if (error) throw error;
+    // Navigate is handled by onAuthStateChange
   };
 
   const signup = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { error, data } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -69,10 +75,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (error) throw error;
     
-    toast({
-      title: "Success!",
-      description: "Check your email to confirm your account.",
-    });
+    // If email confirmation is not required, redirect directly to pricing
+    if (data?.user && !data?.session) {
+      toast({
+        title: "Account created!",
+        description: "Check your email to confirm your account.",
+      });
+    } else if (data?.session) {
+      // User is already logged in, redirect to pricing
+      navigate('/upload');
+      toast({
+        title: "Success!",
+        description: "Your account has been created.",
+      });
+    }
   };
 
   const logout = async () => {

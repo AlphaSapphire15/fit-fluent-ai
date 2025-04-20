@@ -12,7 +12,7 @@ const Login = () => {
   const { user, login, loginWithEmail } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const nextPath = searchParams.get("next") || "/";
+  const nextPath = searchParams.get("next") || "/upload";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ const Login = () => {
     setError("");
     try {
       await loginWithEmail(email, password);
-      navigate(nextPath);
+      // Navigation is handled by onAuthStateChange
     } catch (err: any) {
       setError(err.message || "Failed to sign in");
     } finally {

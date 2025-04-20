@@ -11,7 +11,7 @@ const Signup = () => {
   const { login, signup } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const nextPath = searchParams.get("next") || "/";
+  const nextPath = searchParams.get("next") || "/upload";
   const plan = searchParams.get("plan");
   const { toast } = useToast();
   
@@ -26,7 +26,7 @@ const Signup = () => {
     setError("");
     try {
       await signup(email, password);
-      // We don't navigate here since the user needs to confirm their email
+      // Navigation is handled in the AuthContext
     } catch (err: any) {
       setError(err.message || "Failed to sign up");
     } finally {

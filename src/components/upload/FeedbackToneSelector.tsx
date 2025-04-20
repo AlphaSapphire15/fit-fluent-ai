@@ -25,7 +25,9 @@ const FeedbackToneSelector: React.FC<FeedbackToneSelectorProps> = ({ tone, setTo
               <div 
                 className={`glass-card rounded-full p-4 cursor-pointer border-2 transition-all 
                   hover:border-lilac/30 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]
-                  ${tone === option.value ? "border-lilac shadow-[0_0_15px_rgba(167,139,250,0.3)]" : "border-transparent"}`}
+                  ${tone === option.value 
+                    ? "border-lilac shadow-[0_0_15px_rgba(167,139,250,0.5)] bg-lilac/10" 
+                    : "border-transparent"}`}
               >
                 <RadioGroupItem
                   value={option.value}
@@ -36,7 +38,9 @@ const FeedbackToneSelector: React.FC<FeedbackToneSelectorProps> = ({ tone, setTo
                   htmlFor={option.value}
                   className="flex flex-col cursor-pointer"
                 >
-                  <span className="font-medium text-lg">{option.label}</span>
+                  <span className={`font-medium text-lg ${tone === option.value ? "text-lilac" : ""}`}>
+                    {option.label}
+                  </span>
                   <span className="text-muted-foreground text-sm mt-1">
                     {option.description}
                   </span>
