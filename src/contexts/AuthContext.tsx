@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,9 +31,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Redirect to upload page after successful login
+        // Redirect based on event and URL parameters
         if (event === 'SIGNED_IN') {
-          navigate('/upload');
+          const urlParams = new URLSearchParams(window.location.search);
+          const nextPath = urlParams.get('next');
+          const plan = urlParams.get('plan');
+          
+          if (nextPath === 'payment' && plan) {
+            // Redirect to the pricing page with the selected plan
+            navigate('/#pricing');
+            toast({
+              title: "Account created!",
+              description: "Please select a plan to continue.",
+            });
+          } else {
+            // Default redirect to upload page
+            navigate('/upload');
+          }
         }
       }
     );
@@ -82,8 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Check your email to confirm your account.",
       });
     } else if (data?.session) {
-      // User is already logged in, redirect to pricing
-      navigate('/upload');
+      // User is already logged in, navigation is handled by onAuthStateChange
       toast({
         title: "Success!",
         description: "Your account has been created.",
