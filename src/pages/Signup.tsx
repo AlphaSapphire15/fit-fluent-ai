@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/PageContainer";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
   const { login, signup } = useAuth();
@@ -26,11 +27,46 @@ const Signup = () => {
     setError("");
     try {
       await signup(email, password);
-      // Navigation is handled in the AuthContext
+      console.log("Signup successful. Next path:", nextPath, "Plan:", plan);
     } catch (err: any) {
       setError(err.message || "Failed to sign up");
+      toast({
+        variant: "destructive",
+        title: "Signup failed",
+        description: err.message || "Please try again",
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      // For Google login, we need to manually pass the next path and plan
+      // because the redirect happens outside our app
+      const redirectParams = new URLSearchParams();
+      if (nextPath) redirectParams.set("next", nextPath);
+      if (plan) redirectParams.set("plan", plan);
+      
+      const redirectUrl = `${window.location.origin}/upload?${redirectParams.toString()}`;
+      
+      console.log("Redirecting to Google OAuth with URL:", redirectUrl);
+      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl
+        }
+      });
+      
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "Failed to sign up with Google");
+      toast({
+        variant: "destructive",
+        title: "Google signup failed",
+        description: err.message || "Please try again",
+      });
     }
   };
 
@@ -83,7 +119,7 @@ const Signup = () => {
         </div>
 
         <Button 
-          onClick={() => login()}
+          onClick={handleGoogleSignup}
           variant="outline"
           size="lg"
           className="w-full"

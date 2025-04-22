@@ -25,12 +25,19 @@ serve(async (req) => {
     console.log("Creating checkout session with priceId:", priceId);
 
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeSecretKey) {
+      console.error("STRIPE_SECRET_KEY is not set");
+      throw new Error("Stripe configuration error");
+    }
+    
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2022-11-15",
     });
 
     // Determine if this is a one-time payment or subscription
-    const mode = priceId === Deno.env.get("STRIPE_PRICE_ONE_TIME") ? "payment" : "subscription";
+    const oneTimePrice = Deno.env.get("STRIPE_PRICE_ONE_TIME");
+    const mode = priceId === oneTimePrice ? "payment" : "subscription";
     
     console.log("Checkout mode:", mode);
     
@@ -44,7 +51,7 @@ serve(async (req) => {
       ],
       mode: mode,
       success_url: `${req.headers.get("origin")}/upload?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/`,
+      cancel_url: `${req.headers.get("origin")}/#pricing`,
     });
 
     console.log("Checkout session created:", session.id);

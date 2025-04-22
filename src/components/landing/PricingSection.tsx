@@ -2,8 +2,8 @@
 import { CreditCard } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,14 +11,39 @@ import { supabase } from "@/integrations/supabase/client";
 export const PricingSection = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  // For scroll & highlight animation
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [highlight, setHighlight] = useState(false);
+
+  // Check for plan parameter in URL for users coming from signup
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const plan = urlParams.get('plan');
+    if (plan && user) {
+      console.log("Auto-selecting plan from URL parameter:", plan);
+      setSelectedPlan(plan);
+      handlePlanSelection(plan as "one-time" | "subscription");
+    }
+    // if user only lands with "plan", scroll to pricing even if not logged in
+    if (plan) {
+      if (sectionRef.current) {
+        sectionRef.current.scrollIntoView({ behavior: "smooth" });
+        setHighlight(true);
+        setTimeout(() => setHighlight(false), 3000);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search, user]);
 
   const handlePlanSelection = async (type: "one-time" | "subscription") => {
     try {
       setIsLoading(true);
-      
+
       // If user is not logged in, redirect to signup with return URL
       if (!user) {
         navigate(`/signup?next=payment&plan=${type}`);
@@ -26,12 +51,12 @@ export const PricingSection = () => {
       }
 
       // Determine which price ID to use
-      const priceId = type === "one-time" 
+      const priceId = type === "one-time"
         ? import.meta.env.VITE_PRICE_ONE_TIME
         : import.meta.env.VITE_PRICE_UNLIMITED;
-      
+
       console.log("Selected plan:", type, "with priceId:", priceId);
-      
+
       if (!priceId) {
         console.error("Missing price ID in environment variables");
         toast({
@@ -41,7 +66,7 @@ export const PricingSection = () => {
         });
         return;
       }
-      
+
       // Create checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId }
@@ -58,7 +83,7 @@ export const PricingSection = () => {
       } else {
         throw new Error("No checkout URL returned");
       }
-      
+
     } catch (error) {
       console.error("Error selecting plan:", error);
       toast({
@@ -72,7 +97,12 @@ export const PricingSection = () => {
   };
 
   return (
-    <section className="px-4 py-16 bg-muted/10" id="pricing">
+    <section
+      className={`px-4 py-16 bg-muted/10 transition-shadow duration-500 ${highlight ? "ring-4 ring-lilac/70 shadow-lg" : ""
+        }`}
+      id="pricing"
+      ref={sectionRef}
+    >
       <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl md:text-3xl lg:text-4xl font-poppins font-bold text-center mb-12 heading-gradient">
           Choose Your Plan
@@ -93,7 +123,7 @@ export const PricingSection = () => {
                 <span>Single outfit analysis</span>
               </li>
             </ul>
-            <Button 
+            <Button
               onClick={() => handlePlanSelection("one-time")}
               className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto rounded-full"
               disabled={isLoading}
@@ -101,7 +131,7 @@ export const PricingSection = () => {
               {isLoading ? "Processing..." : "Choose One-Time Plan"}
             </Button>
           </div>
-          
+
           {/* Subscription Card */}
           <div className="glass-card rounded-xl p-6 hover:glow-border transition-all duration-300 relative overflow-hidden flex-1">
             <div className="absolute top-0 right-0 bg-gradient-to-r from-lilac to-neonBlue text-xs px-3 py-1 font-medium text-white">
@@ -123,7 +153,7 @@ export const PricingSection = () => {
                 <span>Unlimited outfit analyses</span>
               </li>
             </ul>
-            <Button 
+            <Button
               onClick={() => handlePlanSelection("subscription")}
               className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
               disabled={isLoading}
