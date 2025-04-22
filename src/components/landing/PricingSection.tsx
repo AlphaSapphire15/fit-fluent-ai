@@ -28,9 +28,19 @@ export const PricingSection = () => {
       // Determine which price ID to use
       const priceId = type === "one-time" 
         ? import.meta.env.VITE_PRICE_ONE_TIME
-        : import.meta.env.VITE_PRICE_SUB_MONTHLY;
+        : import.meta.env.VITE_PRICE_UNLIMITED;
       
       console.log("Selected plan:", type, "with priceId:", priceId);
+      
+      if (!priceId) {
+        console.error("Missing price ID in environment variables");
+        toast({
+          title: "Configuration Error",
+          description: "Missing price information. Please contact support.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       // Create checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {

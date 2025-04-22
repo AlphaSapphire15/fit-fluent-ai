@@ -30,8 +30,7 @@ serve(async (req) => {
     });
 
     // Determine if this is a one-time payment or subscription
-    const ONE_TIME_PRICE_ID = Deno.env.get("STRIPE_PRICE_ONE_TIME");
-    const mode = priceId === ONE_TIME_PRICE_ID ? "payment" : "subscription";
+    const mode = priceId === Deno.env.get("STRIPE_PRICE_ONE_TIME") ? "payment" : "subscription";
     
     console.log("Checkout mode:", mode);
     
