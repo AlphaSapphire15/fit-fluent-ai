@@ -57,11 +57,8 @@ const Upload = () => {
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast({
-        variant: "destructive",
-        title: "Invalid file type",
-        description: "Please upload an image file.",
-      });
+      setDialogMessage("Please upload an image file (JPG, PNG, etc).");
+      setShowDialog(true);
       return;
     }
 
@@ -70,15 +67,8 @@ const Upload = () => {
       const base64 = e.target?.result as string;
       setPreview(base64);
       try {
-        // Extract the base64 data without the data URI prefix
-        const base64Data = base64.split(',')[1];
-        await analyzeImage(base64);
+        await analyzeImage(file);
       } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Analysis failed",
-          description: "Please try again with a different image.",
-        });
         setDialogMessage("Unable to analyze this image. Please try with a different photo.");
         setShowDialog(true);
         setPreview(null);
@@ -124,7 +114,7 @@ const Upload = () => {
         <DialogContent>
           <DialogTitle>Image Analysis Error</DialogTitle>
           <DialogDescription>
-            {dialogMessage}
+            {dialogMessage || "Error analyzing your image. Please try a JPG/PNG."}
           </DialogDescription>
           <div className="flex justify-end">
             <Button onClick={() => setShowDialog(false)}>OK</Button>

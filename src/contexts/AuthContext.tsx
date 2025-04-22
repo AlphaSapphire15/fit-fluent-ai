@@ -27,28 +27,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log("Auth state changed", event, session);
         setSession(session);
         setUser(session?.user ?? null);
 
-        // Get the plan/next params from the current (not necessarily after-redirect) URL
+        // Get the plan/next params from the current URL (not after-redirect)
         const urlParams = new URLSearchParams(window.location.search);
         const nextPath = urlParams.get('next');
         const plan = urlParams.get('plan');
 
-        // Only redirect after sign up or login (signed in event)
         if (event === 'SIGNED_IN') {
-          if (nextPath === 'payment' && plan) {
-            // Redirect to homepage with plan param and "#pricing" anchor to highlight pricing section
-            console.log("Redirecting to main page for pricing with plan:", plan);
-            navigate(`/?plan=${plan}#pricing`);
+          if (nextPath === "payment" && plan) {
+            // Always redirect to pricing section if coming from payment plan
+            navigate(`/?plan=${plan}#pricing`, { replace: true });
             toast({
               title: "Account created!",
               description: "Please choose your plan to continue.",
             });
           } else {
             // Default: go to upload page if NOT coming from a plan-driven signup
-            navigate('/upload');
+            navigate('/upload', { replace: true });
           }
         }
       }
@@ -92,19 +89,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) throw error;
 
-    // If email confirmation is not required, redirect directly to pricing
     if (data?.user && !data?.session) {
       toast({
         title: "Account created!",
         description: "Check your email to confirm your account.",
       });
     } else if (data?.session) {
-      // Navigation is handled by onAuthStateChange
       toast({
         title: "Success!",
         description: "Your account has been created.",
       });
     }
+    // Navigation is handled by onAuthStateChange
   };
 
   const logout = async () => {
