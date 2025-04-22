@@ -10,6 +10,12 @@ import DragAndDrop from "@/components/upload/DragAndDrop";
 import FeedbackToneSelector from "@/components/upload/FeedbackToneSelector";
 import { useImageAnalysis } from "@/hooks/useImageAnalysis";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Dialog,
+  DialogContent, 
+  DialogTitle, 
+  DialogDescription 
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 
 const Upload = () => {
@@ -22,7 +28,8 @@ const Upload = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const { isAnalyzing, analysisResult, analyzeImage, setAnalysisResult } = useImageAnalysis();
   const { toast } = useToast();
-  const [verifyingPayment, setVerifyingPayment] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
 
   useEffect(() => {
     // If user is not logged in, redirect to login
@@ -60,9 +67,11 @@ const Upload = () => {
 
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const base64 = (e.target?.result as string).split(',')[1];
-      setPreview(e.target?.result as string);
+      const base64 = e.target?.result as string;
+      setPreview(base64);
       try {
+        // Extract the base64 data without the data URI prefix
+        const base64Data = base64.split(',')[1];
         await analyzeImage(base64);
       } catch (error) {
         toast({
@@ -70,6 +79,8 @@ const Upload = () => {
           title: "Analysis failed",
           description: "Please try again with a different image.",
         });
+        setDialogMessage("Unable to analyze this image. Please try with a different photo.");
+        setShowDialog(true);
         setPreview(null);
       }
     };
@@ -108,6 +119,18 @@ const Upload = () => {
           </Button>
         </div>
       )}
+      
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent>
+          <DialogTitle>Image Analysis Error</DialogTitle>
+          <DialogDescription>
+            {dialogMessage}
+          </DialogDescription>
+          <div className="flex justify-end">
+            <Button onClick={() => setShowDialog(false)}>OK</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 };

@@ -20,11 +20,19 @@ export const useImageAnalysis = () => {
     setIsAnalyzing(true);
 
     try {
+      // Make sure we're sending the full base64 string with data URI prefix
+      const imageUrl = base64.startsWith('data:') ? base64 : `data:image/jpeg;base64,${base64}`;
+      
+      console.log("Calling analyze-outfit function with image data");
+      
       const { data, error } = await supabase.functions.invoke('analyze-outfit', {
-        body: { imageUrl: `data:image/jpeg;base64,${base64}` }
+        body: { imageUrl }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Function invocation error:', error);
+        throw error;
+      }
 
       const roundTripTime = Date.now() - startTime;
       if (roundTripTime < 300) {
@@ -35,6 +43,8 @@ export const useImageAnalysis = () => {
       }
 
       const analysis = data.analysis;
+      console.log("Received analysis:", analysis);
+      
       const matches = {
         score: parseInt(analysis.match(/(\d+)(?=\/100)/)?.[0] || "0"),
         styleCore: analysis.match(/core style description.*?:\s*(.*?)(?=\n|$)/i)?.[1] || "",
@@ -51,7 +61,7 @@ export const useImageAnalysis = () => {
       toast({
         variant: "destructive",
         title: "Analysis failed",
-        description: "Please try again",
+        description: "Please try again with a different image",
       });
     } finally {
       setIsAnalyzing(false);

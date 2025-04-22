@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/PageContainer";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client"; // Add this import
+import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
   const { login, signup } = useAuth();
@@ -27,10 +27,14 @@ const Signup = () => {
     setError("");
     try {
       await signup(email, password);
-      // The redirection is now handled in AuthContext based on the URL parameters
       console.log("Signup successful. Next path:", nextPath, "Plan:", plan);
     } catch (err: any) {
       setError(err.message || "Failed to sign up");
+      toast({
+        variant: "destructive",
+        title: "Signup failed",
+        description: err.message || "Please try again",
+      });
     } finally {
       setLoading(false);
     }
@@ -46,14 +50,23 @@ const Signup = () => {
       
       const redirectUrl = `${window.location.origin}/upload?${redirectParams.toString()}`;
       
-      await supabase.auth.signInWithOAuth({
+      console.log("Redirecting to Google OAuth with URL:", redirectUrl);
+      
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl
         }
       });
+      
+      if (error) throw error;
     } catch (err: any) {
       setError(err.message || "Failed to sign up with Google");
+      toast({
+        variant: "destructive",
+        title: "Google signup failed",
+        description: err.message || "Please try again",
+      });
     }
   };
 
@@ -106,7 +119,7 @@ const Signup = () => {
         </div>
 
         <Button 
-          onClick={() => login()}
+          onClick={handleGoogleSignup}
           variant="outline"
           size="lg"
           className="w-full"

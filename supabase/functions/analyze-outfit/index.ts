@@ -23,7 +23,13 @@ serve(async (req) => {
       throw new Error('No image URL provided');
     }
 
-    console.log('Analyzing outfit from image:', imageUrl);
+    console.log('Analyzing outfit from image data');
+
+    // Format the image data correctly for OpenAI API
+    // The API expects an object with a url property
+    const imageData = {
+      url: imageUrl
+    };
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -48,7 +54,7 @@ serve(async (req) => {
             role: 'user',
             content: [
               { type: 'text', text: 'Please analyze this outfit:' },
-              { type: 'image_url', image_url: imageUrl }
+              { type: 'image_url', image_url: imageData }
             ]
           }
         ]
@@ -64,7 +70,7 @@ serve(async (req) => {
     const data = await response.json();
     const analysis = data.choices[0].message.content;
 
-    console.log('Analysis completed:', analysis);
+    console.log('Analysis completed successfully');
 
     return new Response(JSON.stringify({ analysis }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
