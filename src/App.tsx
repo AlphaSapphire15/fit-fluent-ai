@@ -7,6 +7,7 @@ import { StyleProvider } from "./contexts/StyleContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -27,11 +28,32 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/loading" element={<Loading />} />
-              <Route path="/results" element={<Results />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route 
+                path="/upload" 
+                element={
+                  <ProtectedRoute>
+                    <Upload />
+                  </ProtectedRoute>
+                }
+              />
+              <Route 
+                path="/loading" 
+                element={
+                  <ProtectedRoute>
+                    <Loading />
+                  </ProtectedRoute>
+                }
+              />
+              <Route 
+                path="/results" 
+                element={
+                  <ProtectedRoute>
+                    <Results />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

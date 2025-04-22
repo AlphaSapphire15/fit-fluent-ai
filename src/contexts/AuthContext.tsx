@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
@@ -12,6 +13,7 @@ interface AuthContextType {
   loginWithEmail: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  initiateCheckout: (planType: "one-time" | "subscription") => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -19,40 +21,84 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
+  const initiateCheckout = async (planType: "one-time" | "subscription") => {
+    if (isLoadingCheckout) return;
+
+    setIsLoadingCheckout(true);
+    try {
+      const priceId = planType === "one-time" 
+        ? import.meta.env.VITE_PRICE_ONE_TIME
+        : import.meta.env.VITE_PRICE_UNLIMITED;
+
+      console.log("Initiating checkout for plan:", planType, "with priceId:", priceId);
+
+      if (!priceId) {
+        console.error("Missing price ID in environment variables");
+        toast({
+          title: "Configuration Error",
+          description: "Missing price information. Please contact support.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId }
+      });
+
+      if (error) {
+        console.error("Error creating checkout session:", error);
+        throw new Error("Failed to create checkout session");
+      }
+
+      if (data?.url) {
+        console.log("Redirecting to Stripe Checkout URL:", data.url);
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+      
+    } catch (error) {
+      console.error("Error initiating checkout:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem initiating checkout. Please try again or contact support.",
+        variant: "destructive",
+      });
+      setIsLoadingCheckout(false);
+    }
+  };
+
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log("Auth state changed", event, session);
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Redirect based on event and URL parameters
         if (event === 'SIGNED_IN') {
           const urlParams = new URLSearchParams(window.location.search);
           const nextPath = urlParams.get('next');
-          const plan = urlParams.get('plan');
+          const plan = urlParams.get('plan') as "one-time" | "subscription" | null;
           
           if (nextPath === 'payment' && plan) {
-            // Redirect to the pricing page with the selected plan
-            navigate('/#pricing');
-            toast({
-              title: "Account created!",
-              description: "Please select a plan to continue.",
-            });
+            console.log("Signed in with next=payment, initiating checkout for plan:", plan);
+            await initiateCheckout(plan);
           } else {
-            // Default redirect to upload page
+            console.log("Signed in, default redirect to /upload");
             navigate('/upload');
           }
+        } else if (event === 'SIGNED_OUT') {
+          navigate('/');
         }
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -76,7 +122,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password
     });
     if (error) throw error;
-    // Navigate is handled by onAuthStateChange
   };
 
   const signup = async (email: string, password: string) => {
@@ -90,14 +135,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (error) throw error;
     
-    // If email confirmation is not required, redirect directly to pricing
     if (data?.user && !data?.session) {
       toast({
         title: "Account created!",
         description: "Check your email to confirm your account.",
       });
     } else if (data?.session) {
-      // User is already logged in, navigation is handled by onAuthStateChange
       toast({
         title: "Success!",
         description: "Your account has been created.",
@@ -111,7 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, login, loginWithEmail, signup, logout }}>
+    <AuthContext.Provider value={{ user, session, login, loginWithEmail, signup, logout, initiateCheckout }}>
       {children}
     </AuthContext.Provider>
   );
