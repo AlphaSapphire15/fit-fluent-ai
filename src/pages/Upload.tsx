@@ -25,6 +25,7 @@ const Upload = () => {
   const [verifyingPayment, setVerifyingPayment] = useState(false);
 
   useEffect(() => {
+    // If user is not logged in, redirect to login
     if (!user) {
       navigate("/login?next=/upload");
       return;

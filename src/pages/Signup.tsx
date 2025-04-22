@@ -26,11 +26,33 @@ const Signup = () => {
     setError("");
     try {
       await signup(email, password);
-      // Navigation is handled in the AuthContext
+      // The redirection is now handled in AuthContext based on the URL parameters
+      console.log("Signup successful. Next path:", nextPath, "Plan:", plan);
     } catch (err: any) {
       setError(err.message || "Failed to sign up");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      // For Google login, we need to manually pass the next path and plan
+      // because the redirect happens outside our app
+      const redirectParams = new URLSearchParams();
+      if (nextPath) redirectParams.set("next", nextPath);
+      if (plan) redirectParams.set("plan", plan);
+      
+      const redirectUrl = `${window.location.origin}/upload?${redirectParams.toString()}`;
+      
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl
+        }
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to sign up with Google");
     }
   };
 

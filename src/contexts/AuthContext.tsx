@@ -38,14 +38,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const plan = urlParams.get('plan');
           
           if (nextPath === 'payment' && plan) {
-            // Redirect to the pricing page with the selected plan
-            navigate('/#pricing');
+            console.log("Redirecting to pricing with plan:", plan);
+            // Navigate to pricing section with the plan parameter
+            navigate(`/?plan=${plan}#pricing`);
             toast({
               title: "Account created!",
-              description: "Please select a plan to continue.",
+              description: "Please proceed with your payment to continue.",
             });
           } else {
-            // Default redirect to upload page
+            // Only redirect to upload page if no specific direction
             navigate('/upload');
           }
         }

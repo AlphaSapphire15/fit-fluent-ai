@@ -2,8 +2,8 @@
 import { CreditCard } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,9 +11,23 @@ import { supabase } from "@/integrations/supabase/client";
 export const PricingSection = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+
+  // Check for plan parameter in URL for users coming from signup
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const plan = urlParams.get('plan');
+    
+    if (plan && user) {
+      console.log("Auto-selecting plan from URL parameter:", plan);
+      setSelectedPlan(plan);
+      handlePlanSelection(plan as "one-time" | "subscription");
+    }
+  }, [location.search, user]);
 
   const handlePlanSelection = async (type: "one-time" | "subscription") => {
     try {
