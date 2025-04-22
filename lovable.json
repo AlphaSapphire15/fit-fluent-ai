@@ -1,0 +1,12 @@
+{
+    "build": {
+      "env": {
+        "VITE_STRIPE_PUBLISHABLE_KEY": "pk_test_51RFhfV4EZDpArr1NgH02y3HBG7nGWCRQsayIcn50epGydS8PQbqK7gXUiW5kcBqM59cYk2VDw0A2yhwFuqPxssn800p8l0zkmr",
+        "VITE_PRICE_UNLIMITED": "price_1RFhvfYourUnlimitedID",
+        "VITE_PRICE_ONE_TIME": "price_1RFhpIYourOneTimeID"
+      },
+      "secrets": {
+        "STRIPE_SECRET_KEY": "sk_test_51RFhfV4EZDpArr1NqG6Fgzg6SCNz8lAV5NTf9PQUbRw92BVmYHXL9gql6lmsBbEeSWp1iNkVKOkT0CJ6HwtBijuW00BgPxCKqU"
+      }
+    }
+  }
