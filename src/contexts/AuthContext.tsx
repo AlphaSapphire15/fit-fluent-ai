@@ -30,23 +30,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("Auth state changed", event, session);
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Redirect based on event and URL parameters
+
+        // Get the plan/next params from the current (not necessarily after-redirect) URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const nextPath = urlParams.get('next');
+        const plan = urlParams.get('plan');
+
+        // Only redirect after sign up or login (signed in event)
         if (event === 'SIGNED_IN') {
-          const urlParams = new URLSearchParams(window.location.search);
-          const nextPath = urlParams.get('next');
-          const plan = urlParams.get('plan');
-          
           if (nextPath === 'payment' && plan) {
-            console.log("Redirecting to pricing with plan:", plan);
-            // Navigate to pricing section with the plan parameter
+            // Redirect to homepage with plan param and "#pricing" anchor to highlight pricing section
+            console.log("Redirecting to main page for pricing with plan:", plan);
             navigate(`/?plan=${plan}#pricing`);
             toast({
               title: "Account created!",
-              description: "Please proceed with your payment to continue.",
+              description: "Please choose your plan to continue.",
             });
           } else {
-            // Only redirect to upload page if no specific direction
+            // Default: go to upload page if NOT coming from a plan-driven signup
             navigate('/upload');
           }
         }
@@ -60,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location]);
 
   const login = async () => {
     await supabase.auth.signInWithOAuth({
@@ -77,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password
     });
     if (error) throw error;
-    // Navigate is handled by onAuthStateChange
+    // Navigation is handled by onAuthStateChange
   };
 
   const signup = async (email: string, password: string) => {
@@ -88,9 +89,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         emailRedirectTo: `${window.location.origin}/login`
       }
     });
-    
+
     if (error) throw error;
-    
+
     // If email confirmation is not required, redirect directly to pricing
     if (data?.user && !data?.session) {
       toast({
@@ -98,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Check your email to confirm your account.",
       });
     } else if (data?.session) {
-      // User is already logged in, navigation is handled by onAuthStateChange
+      // Navigation is handled by onAuthStateChange
       toast({
         title: "Success!",
         description: "Your account has been created.",
