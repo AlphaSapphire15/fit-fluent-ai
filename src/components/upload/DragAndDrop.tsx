@@ -25,7 +25,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
   // Check if device is mobile
   React.useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+      setIsMobile(/iPhone|iPad|iPod/i.test(navigator.userAgent));
     };
     checkMobile();
   }, []);
@@ -71,18 +71,13 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
     if (!fileInputRef.current) return;
     
     if (isMobile) {
-      // For mobile devices, use camera
+      // For iPhones, specifically request camera access
       fileInputRef.current.setAttribute('capture', 'environment');
       fileInputRef.current.setAttribute('accept', 'image/*');
     } else {
       // For desktop, just open file picker with image filter
       fileInputRef.current.removeAttribute('capture');
       fileInputRef.current.setAttribute('accept', 'image/*');
-      
-      toast({
-        title: "Desktop detected",
-        description: "Opening file browser since camera may not be available.",
-      });
     }
     
     fileInputRef.current.click();
@@ -104,9 +99,9 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
           </div>
           <p className="mb-2 font-medium">Drag and drop your photo here</p>
           <p className="text-sm text-muted-foreground mb-4">
-            Or click below to select a file
+            Or use one of the options below
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button
               variant="gradient"
               size="sm"
@@ -121,7 +116,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
               className="text-sm"
               onClick={handleTakePhoto}
             >
-              <Camera size={14} className="mr-1" /> {isMobile ? "Take Photo" : "Choose Image"}
+              <Camera size={14} className="mr-1" /> {isMobile ? "Take Picture" : "Choose Image"}
             </Button>
           </div>
           <input
