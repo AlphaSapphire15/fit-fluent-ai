@@ -1,10 +1,15 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Helper logging function for enhanced debugging
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[ANALYZE-OUTFIT] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -23,13 +28,14 @@ serve(async (req) => {
       throw new Error('No image URL provided');
     }
 
-    console.log('Analyzing outfit from image data');
+    logStep('Processing image', { urlLength: imageUrl.length });
 
-    // Format the image data correctly for OpenAI API
-    // The API expects an object with a url property
+    // The critical fix: OpenAI expects an object with a "url" property, not just the URL string
     const imageData = {
       url: imageUrl
     };
+
+    logStep('Sending request to OpenAI');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -63,20 +69,20 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error('Failed to analyze image');
+      logStep('OpenAI API error', error);
+      throw new Error(`OpenAI API error: ${JSON.stringify(error)}`);
     }
 
     const data = await response.json();
     const analysis = data.choices[0].message.content;
 
-    console.log('Analysis completed successfully');
+    logStep('Analysis completed successfully');
 
     return new Response(JSON.stringify({ analysis }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in analyze-outfit function:', error);
+    logStep('Error in analyze-outfit function', { message: error.message });
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

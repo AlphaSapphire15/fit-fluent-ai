@@ -14,7 +14,8 @@ import {
   Dialog,
   DialogContent, 
   DialogTitle, 
-  DialogDescription 
+  DialogDescription,
+  DialogHeader
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -112,10 +113,12 @@ const Upload = () => {
       
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
-          <DialogTitle>Image Analysis Error</DialogTitle>
-          <DialogDescription>
-            {dialogMessage || "Error analyzing your image. Please try a JPG/PNG."}
-          </DialogDescription>
+          <DialogHeader>
+            <DialogTitle>Image Analysis Error</DialogTitle>
+            <DialogDescription>
+              {dialogMessage || "Error analyzing your image. Please try a JPG/PNG."}
+            </DialogDescription>
+          </DialogHeader>
           <div className="flex justify-end">
             <Button onClick={() => setShowDialog(false)}>OK</Button>
           </div>

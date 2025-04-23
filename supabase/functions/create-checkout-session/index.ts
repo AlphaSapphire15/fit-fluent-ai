@@ -7,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper logging function for enhanced debugging
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -16,19 +22,39 @@ serve(async (req) => {
   }
 
   try {
+    logStep("Function started");
     const { priceId } = await req.json();
     
     if (!priceId) {
       throw new Error("Price ID is required");
     }
 
-    console.log("Creating checkout session with priceId:", priceId);
+    logStep("Request received for price ID", { priceId });
 
-    // Initialize Stripe
+    // Initialize Stripe with proper error handling
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeSecretKey) {
-      console.error("STRIPE_SECRET_KEY is not set");
-      throw new Error("Stripe configuration error");
+      logStep("ERROR: Missing STRIPE_SECRET_KEY");
+      throw new Error("Stripe configuration error: Missing secret key");
+    }
+    
+    // Get price IDs from environment
+    const oneTimePrice = Deno.env.get("STRIPE_PRICE_ONE_TIME");
+    const subMonthlyPrice = Deno.env.get("STRIPE_PRICE_SUB_MONTHLY");
+    
+    logStep("Available price IDs", { 
+      oneTimePrice, 
+      subMonthlyPrice, 
+      requestedPrice: priceId 
+    });
+
+    // Validate price ID
+    if (priceId !== oneTimePrice && priceId !== subMonthlyPrice) {
+      logStep("WARNING: Requested price ID doesn't match known prices", { 
+        requestedPrice: priceId, 
+        knownPrices: { oneTimePrice, subMonthlyPrice } 
+      });
+      // We'll continue anyway since the ID might be valid in Stripe
     }
     
     const stripe = new Stripe(stripeSecretKey, {
@@ -36,10 +62,8 @@ serve(async (req) => {
     });
 
     // Determine if this is a one-time payment or subscription
-    const oneTimePrice = Deno.env.get("STRIPE_PRICE_ONE_TIME");
     const mode = priceId === oneTimePrice ? "payment" : "subscription";
-    
-    console.log("Checkout mode:", mode);
+    logStep("Checkout mode determined", { mode });
     
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
@@ -54,7 +78,10 @@ serve(async (req) => {
       cancel_url: `${req.headers.get("origin")}/#pricing`,
     });
 
-    console.log("Checkout session created:", session.id);
+    logStep("Checkout session created", { 
+      sessionId: session.id, 
+      url: session.url 
+    });
 
     return new Response(
       JSON.stringify({ url: session.url }),
@@ -64,7 +91,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error creating checkout session:", error);
+    logStep("Error creating checkout session", { message: error.message });
     
     return new Response(
       JSON.stringify({ error: error.message }),

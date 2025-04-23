@@ -1,3 +1,4 @@
+
 /// <reference types="vite/client" />
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -70,14 +71,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "There was a problem initiating checkout. Please try again or contact support.",
         variant: "destructive",
       });
+      throw error; // Re-throw so calling code can handle it
+    } finally {
       setIsLoadingCheckout(false);
     }
   };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-<<<<<<< HEAD
-      async (event, session) => {
+      (event, session) => {
         console.log("Auth state changed", event, session);
         setSession(session);
         setUser(session?.user ?? null);
@@ -88,33 +90,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const plan = urlParams.get('plan') as "one-time" | "subscription" | null;
           
           if (nextPath === 'payment' && plan) {
-            console.log("Signed in with next=payment, initiating checkout for plan:", plan);
-            await initiateCheckout(plan);
+            // Now redirect to a dedicated page that will handle payment initiation
+            console.log(`Redirecting to main page for pricing with plan: ${plan}`);
+            // The plan parameter will trigger automatic highlighting of pricing
+            navigate(`/initiate-checkout?plan=${plan}`, { replace: true });
           } else {
             console.log("Signed in, default redirect to /upload");
-            navigate('/upload');
-=======
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-
-        // Get the plan/next params from the current URL (not after-redirect)
-        const urlParams = new URLSearchParams(window.location.search);
-        const nextPath = urlParams.get('next');
-        const plan = urlParams.get('plan');
-
-        if (event === 'SIGNED_IN') {
-          if (nextPath === "payment" && plan) {
-            // Always redirect to pricing section if coming from payment plan
-            navigate(`/?plan=${plan}#pricing`, { replace: true });
-            toast({
-              title: "Account created!",
-              description: "Please choose your plan to continue.",
-            });
-          } else {
-            // Default: go to upload page if NOT coming from a plan-driven signup
             navigate('/upload', { replace: true });
->>>>>>> a762419d882a1dd0e8e821f0abc765b999b7f044
           }
         } else if (event === 'SIGNED_OUT') {
           navigate('/');
@@ -145,10 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password
     });
     if (error) throw error;
-<<<<<<< HEAD
-=======
     // Navigation is handled by onAuthStateChange
->>>>>>> a762419d882a1dd0e8e821f0abc765b999b7f044
   };
 
   const signup = async (email: string, password: string) => {
@@ -161,11 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (error) throw error;
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> a762419d882a1dd0e8e821f0abc765b999b7f044
     if (data?.user && !data?.session) {
       toast({
         title: "Account created!",
@@ -177,6 +152,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Your account has been created.",
       });
     }
+    
+    // Get plan parameter for later use in onAuthStateChange
+    const urlParams = new URLSearchParams(window.location.search);
+    const nextPath = urlParams.get('next');
+    const plan = urlParams.get('plan');
+    console.log("Signup successful. Next path:", nextPath, "Plan:", plan);
+    
     // Navigation is handled by onAuthStateChange
   };
 
