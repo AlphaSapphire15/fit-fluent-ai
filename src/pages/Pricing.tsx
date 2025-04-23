@@ -28,7 +28,6 @@ const Pricing = () => {
     try {
       setIsLoading(prev => ({ ...prev, [type]: true }));
       await initiateCheckout(type);
-      // Note: initiateCheckout handles the redirect to Stripe
     } catch (error) {
       console.error("Error selecting plan:", error);
       toast({
@@ -101,7 +100,7 @@ const Pricing = () => {
                 disabled={isLoading['one-time']}
                 size="lg"
               >
-                {isLoading['one-time'] ? "Processing..." : "Choose One-Time Plan"}
+                {isLoading['one-time'] ? "Processing..." : "Choose Plan"}
               </Button>
             </CardFooter>
           </Card>
@@ -153,7 +152,7 @@ const Pricing = () => {
                 disabled={isLoading['subscription']}
                 size="lg"
               >
-                {isLoading['subscription'] ? "Processing..." : "Choose Unlimited Plan"}
+                {isLoading['subscription'] ? "Processing..." : "Choose Plan"}
               </Button>
             </CardFooter>
           </Card>
