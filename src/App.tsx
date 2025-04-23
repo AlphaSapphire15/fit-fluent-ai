@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,7 @@ import Loading from "./pages/Loading";
 import Results from "./pages/Results";
 import InitiateCheckout from "./pages/InitiateCheckout";
 import NotFound from "./pages/NotFound";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -29,9 +29,20 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+
+              {/* Protected Routes */}
+              <Route 
+                path="/pricing" 
+                element={
+                  <ProtectedRoute>
+                    <Pricing />
+                  </ProtectedRoute>
+                }
+              />
               <Route 
                 path="/upload" 
                 element={
@@ -64,6 +75,8 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              
+              {/* Catch-all Not Found Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
