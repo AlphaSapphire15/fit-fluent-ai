@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StyleProvider } from "./contexts/StyleContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { NavigationMenu } from "./components/NavigationMenu";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -17,6 +17,7 @@ import Loading from "./pages/Loading";
 import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <NavigationMenu />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Landing />} />
@@ -40,6 +42,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Pricing />
+                  </ProtectedRoute>
+                }
+              />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 }
               />

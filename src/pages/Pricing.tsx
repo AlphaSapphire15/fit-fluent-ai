@@ -5,10 +5,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/PageContainer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CreditCard, CheckIcon, Star } from "lucide-react";
+import { CheckIcon, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -34,6 +39,21 @@ const Pricing = () => {
       setIsLoading(prev => ({ ...prev, [type]: false }));
     }
   };
+
+  const faqs = [
+    {
+      question: "How does the analysis work?",
+      answer: "Our AI analyzes your outfit photo and provides detailed style recommendations, color coordination advice, and personalized fashion tips."
+    },
+    {
+      question: "Can I cancel my subscription?",
+      answer: "Yes, you can cancel your unlimited plan subscription anytime with no questions asked."
+    },
+    {
+      question: "How many outfits can I analyze?",
+      answer: "With the one-time plan, you get one outfit analysis. With the unlimited plan, you can analyze as many outfits as you want during your subscription period."
+    }
+  ];
 
   return (
     <PageContainer showBackButton>
@@ -76,7 +96,8 @@ const Pricing = () => {
             <CardFooter className="pt-4">
               <Button
                 onClick={() => handlePlanSelection("one-time")}
-                className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto rounded-full"
+                variant="gradient"
+                className="w-full py-6 h-auto rounded-full"
                 disabled={isLoading['one-time']}
                 size="lg"
               >
@@ -127,7 +148,8 @@ const Pricing = () => {
             <CardFooter className="pt-4">
               <Button
                 onClick={() => handlePlanSelection("subscription")}
-                className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
+                variant="gradient"
+                className="w-full py-6 h-auto rounded-full"
                 disabled={isLoading['subscription']}
                 size="lg"
               >
@@ -140,20 +162,18 @@ const Pricing = () => {
         <div className="mt-12 text-center max-w-xl mx-auto">
           <Separator className="mb-6" />
           <h3 className="text-lg font-medium mb-4">Frequently Asked Questions</h3>
-          <div className="text-sm text-left space-y-4">
-            <div>
-              <h4 className="font-medium mb-1">How does the analysis work?</h4>
-              <p className="text-muted-foreground">Our AI analyzes your outfit photo and provides detailed style recommendations, color coordination advice, and personalized fashion tips.</p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-1">Can I cancel my subscription?</h4>
-              <p className="text-muted-foreground">Yes, you can cancel your unlimited plan subscription anytime with no questions asked.</p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-1">How many outfits can I analyze?</h4>
-              <p className="text-muted-foreground">With the one-time plan, you get one outfit analysis. With the unlimited plan, you can analyze as many outfits as you want during your subscription period.</p>
-            </div>
-          </div>
+          <Accordion type="single" collapsible className="text-left">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-base font-medium">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </div>
     </PageContainer>
