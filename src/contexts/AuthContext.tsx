@@ -1,4 +1,3 @@
-
 /// <reference types="vite/client" />
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -90,10 +89,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const plan = urlParams.get('plan') as "one-time" | "subscription" | null;
           
           if (nextPath === 'payment' && plan) {
-            // Now redirect to a dedicated page that will handle payment initiation
-            console.log(`Redirecting to main page for pricing with plan: ${plan}`);
-            // The plan parameter will trigger automatic highlighting of pricing
-            navigate(`/initiate-checkout?plan=${plan}`, { replace: true });
+            // Now redirect to pricing page after signup if a plan was selected
+            console.log(`Redirecting to pricing after signup with plan: ${plan}`);
+            navigate('/pricing', { replace: true });
           } else {
             console.log("Signed in, default redirect to /upload");
             navigate('/upload', { replace: true });

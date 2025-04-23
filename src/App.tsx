@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,7 +15,6 @@ import Landing from "./pages/Landing";
 import Upload from "./pages/Upload";
 import Loading from "./pages/Loading";
 import Results from "./pages/Results";
-import InitiateCheckout from "./pages/InitiateCheckout";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 
@@ -64,14 +64,6 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Results />
-                  </ProtectedRoute>
-                }
-              />
-              <Route 
-                path="/initiate-checkout" 
-                element={
-                  <ProtectedRoute>
-                    <InitiateCheckout />
                   </ProtectedRoute>
                 }
               />

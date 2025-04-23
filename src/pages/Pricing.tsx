@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +17,7 @@ const Pricing = () => {
     try {
       setIsLoading(true);
       await initiateCheckout(type);
+      // Note: initiateCheckout handles the redirect to Stripe
     } catch (error) {
       console.error("Error selecting plan:", error);
       toast({
