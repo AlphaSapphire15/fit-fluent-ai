@@ -2,6 +2,9 @@
 import { Camera, Wand2, Award, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const steps = [
   {
@@ -28,6 +31,16 @@ const steps = [
 
 export const HowItWorks = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleTryItClick = () => {
+    if (!user) {
+      navigate('/signup');
+    } else {
+      navigate('/upload');
+    }
+  };
 
   return (
     <section className="px-4 py-16 bg-muted/20">
@@ -60,9 +73,14 @@ export const HowItWorks = () => {
         </div>
 
         <div className="text-center mt-8">
-          <button className="cta-button">
+          <Button 
+            onClick={handleTryItClick}
+            variant="gradient" 
+            size="lg"
+            className="rounded-full px-6"
+          >
             Try It On Your Photos
-          </button>
+          </Button>
         </div>
       </div>
     </section>

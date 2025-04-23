@@ -1,3 +1,4 @@
+
 /// <reference types="vite/client" />
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const [isNewSignup, setIsNewSignup] = useState(false);
 
   const initiateCheckout = async (planType: "one-time" | "subscription") => {
     if (isLoadingCheckout) return;
@@ -88,9 +90,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const nextPath = urlParams.get('next');
           const plan = urlParams.get('plan') as "one-time" | "subscription" | null;
           
-          if (nextPath === 'payment' && plan) {
-            // Redirect to pricing page after signup if a plan was selected
-            console.log(`Redirecting to pricing after signup with plan: ${plan}`);
+          // If isNewSignup is true or coming from signup page with a plan parameter,
+          // direct to pricing
+          if (isNewSignup || (nextPath === 'payment' && plan)) {
+            setIsNewSignup(false);
+            console.log(`Redirecting to pricing after signup`);
             navigate('/pricing', { replace: true });
           } else if (nextPath && nextPath !== '/') {
             // Respect the next parameter if provided
@@ -112,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location]);
+  }, [navigate, location, isNewSignup]);
 
   const login = async () => {
     await supabase.auth.signInWithOAuth({
@@ -143,6 +147,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) throw error;
 
+    // Mark this as a new signup so we can redirect to pricing page
+    setIsNewSignup(true);
+
     if (data?.user && !data?.session) {
       toast({
         title: "Account created!",
@@ -154,12 +161,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Your account has been created.",
       });
     }
-    
-    // Get plan parameter for later use in onAuthStateChange
-    const urlParams = new URLSearchParams(window.location.search);
-    const nextPath = urlParams.get('next');
-    const plan = urlParams.get('plan');
-    console.log("Signup successful. Next path:", nextPath, "Plan:", plan);
     
     // Navigation is handled by onAuthStateChange
   };
