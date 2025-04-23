@@ -102,6 +102,14 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
             Or use one of the options below
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              variant="gradient"
+              size="sm"
+              className="text-sm"
+              onClick={handleTakePhoto}
+            >
+              <Camera size={14} className="mr-1" /> Take Picture
+            </Button>
             <Button
               variant="gradient"
               size="sm"
@@ -109,14 +117,6 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
               className="text-sm"
             >
               Browse Files
-            </Button>
-            <Button 
-              variant="gradient"
-              size="sm" 
-              className="text-sm"
-              onClick={handleTakePhoto}
-            >
-              <Camera size={14} className="mr-1" /> {isMobile ? "Take Picture" : "Choose Image"}
             </Button>
           </div>
           <input
