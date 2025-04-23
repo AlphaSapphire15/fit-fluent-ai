@@ -18,7 +18,7 @@ import {
 const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { initiateCheckout } = useAuth();
+  const { user, initiateCheckout } = useAuth();
   const [isLoading, setIsLoading] = useState<{[key: string]: boolean}>({
     'one-time': false,
     'subscription': false
@@ -27,6 +27,13 @@ const Pricing = () => {
   const handlePlanSelection = async (type: "one-time" | "subscription") => {
     try {
       setIsLoading(prev => ({ ...prev, [type]: true }));
+      
+      // If not logged in, redirect to signup with plan selection info
+      if (!user) {
+        navigate(`/signup?next=payment&plan=${type}`);
+        return;
+      }
+      
       await initiateCheckout(type);
     } catch (error) {
       console.error("Error selecting plan:", error);

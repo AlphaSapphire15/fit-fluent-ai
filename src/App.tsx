@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -35,16 +36,9 @@ const App = () => (
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/pricing" element={<Pricing />} />
 
               {/* Protected Routes */}
-              <Route 
-                path="/pricing" 
-                element={
-                  <ProtectedRoute>
-                    <Pricing />
-                  </ProtectedRoute>
-                }
-              />
               <Route 
                 path="/profile" 
                 element={

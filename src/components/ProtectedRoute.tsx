@@ -12,15 +12,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation();
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  // If user tries to access /upload or similar protected features without a plan,
-  // redirect to pricing
-  if (location.pathname === "/upload") {
-    // TODO: Add proper subscription check here once implemented
-    // For now, always redirect to pricing if they try to access upload
-    return <Navigate to="/pricing" replace />;
+    // Send user to login with the intended destination as 'next' parameter
+    return <Navigate to={`/login?next=${location.pathname}`} state={{ from: location }} replace />;
   }
 
   return children;

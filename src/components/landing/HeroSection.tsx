@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
@@ -35,7 +36,7 @@ export const HeroSection = () => {
         className="rounded-full font-medium shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_25px_rgba(167,139,250,0.6)] w-full max-w-xs md:max-w-md mb-12"
       >
         <Camera className="mr-2 w-5 h-5" />
-        Upload Your Look
+        {user ? "Analyze Your Outfit" : "Sign In to Upload"}
       </Button>
 
       {/* Before/After Comparison */}

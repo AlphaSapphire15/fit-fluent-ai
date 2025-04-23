@@ -89,12 +89,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const plan = urlParams.get('plan') as "one-time" | "subscription" | null;
           
           if (nextPath === 'payment' && plan) {
-            // Now redirect to pricing page after signup if a plan was selected
+            // Redirect to pricing page after signup if a plan was selected
             console.log(`Redirecting to pricing after signup with plan: ${plan}`);
             navigate('/pricing', { replace: true });
+          } else if (nextPath && nextPath !== '/') {
+            // Respect the next parameter if provided
+            navigate(nextPath, { replace: true });
           } else {
-            console.log("Signed in, default redirect to /upload");
-            navigate('/upload', { replace: true });
+            // Default redirect to landing page instead of directly to upload
+            console.log("Signed in, default redirect to home page");
+            navigate('/', { replace: true });
           }
         } else if (event === 'SIGNED_OUT') {
           navigate('/');
