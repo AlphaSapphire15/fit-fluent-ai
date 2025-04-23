@@ -4,18 +4,24 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import PageContainer from "@/components/PageContainer";
-import { CreditCard } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CreditCard, CheckIcon, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { initiateCheckout } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<{[key: string]: boolean}>({
+    'one-time': false,
+    'subscription': false
+  });
 
   const handlePlanSelection = async (type: "one-time" | "subscription") => {
     try {
-      setIsLoading(true);
+      setIsLoading(prev => ({ ...prev, [type]: true }));
       await initiateCheckout(type);
       // Note: initiateCheckout handles the redirect to Stripe
     } catch (error) {
@@ -25,70 +31,128 @@ const Pricing = () => {
         description: "There was a problem selecting the plan. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
+      setIsLoading(prev => ({ ...prev, [type]: false }));
     }
   };
 
   return (
     <PageContainer showBackButton>
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-poppins font-bold text-center mb-8 heading-gradient">
-          Choose Your Plan
-        </h1>
-        <div className="flex flex-col md:flex-row gap-6 justify-center">
-          {/* One-time Card */}
-          <div className="glass-card rounded-xl p-6 hover:glow-border transition-all duration-300 flex-1">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="font-poppins font-bold text-xl mb-1">One-Time Scan</h3>
-                <p className="text-muted-foreground text-sm">Just trying it out</p>
-              </div>
-              <div className="text-2xl font-bold text-lilac">$3</div>
-            </div>
-            <ul className="mb-6 space-y-3">
-              <li className="flex items-center text-sm gap-2">
-                <CreditCard size={18} className="text-lilac" />
-                <span>Single outfit analysis</span>
-              </li>
-            </ul>
-            <Button
-              onClick={() => handlePlanSelection("one-time")}
-              className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto rounded-full"
-              disabled={isLoading}
-            >
-              {isLoading ? "Processing..." : "Choose One-Time Plan"}
-            </Button>
-          </div>
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-poppins font-bold mb-4 heading-gradient">
+            Choose Your Perfect Plan
+          </h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Get personalized style recommendations and outfit analysis to elevate your fashion game
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* One-time Plan Card */}
+          <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden">
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                <span className="text-xl font-poppins">One-Time Scan</span>
+                <span className="text-2xl font-bold text-lilac">$3</span>
+              </CardTitle>
+              <CardDescription>Try it out with a single outfit analysis</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-2">
+                  <CheckIcon size={18} className="text-lilac min-w-[18px]" />
+                  <span>Single outfit analysis</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon size={18} className="text-lilac min-w-[18px]" />
+                  <span>Detailed style recommendations</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon size={18} className="text-lilac min-w-[18px]" />
+                  <span>Color coordination advice</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter className="pt-4">
+              <Button
+                onClick={() => handlePlanSelection("one-time")}
+                className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto rounded-full"
+                disabled={isLoading['one-time']}
+                size="lg"
+              >
+                {isLoading['one-time'] ? "Processing..." : "Choose One-Time Plan"}
+              </Button>
+            </CardFooter>
+          </Card>
 
-          {/* Subscription Card */}
-          <div className="glass-card rounded-xl p-6 hover:glow-border transition-all duration-300 relative overflow-hidden flex-1">
+          {/* Subscription Plan Card */}
+          <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 bg-gradient-to-r from-lilac to-neonBlue text-xs px-3 py-1 font-medium text-white">
               BEST VALUE
             </div>
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="font-poppins font-bold text-xl mb-1">Unlimited Plan</h3>
-                <p className="text-muted-foreground text-sm">For serious style upgrades</p>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-lilac">$10</div>
-                <div className="text-xs text-right text-muted-foreground">per month</div>
-              </div>
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                <span className="text-xl font-poppins">Unlimited Plan</span>
+                <div>
+                  <span className="text-2xl font-bold text-lilac">$10</span>
+                  <span className="text-xs text-muted-foreground block text-right">/month</span>
+                </div>
+              </CardTitle>
+              <CardDescription>For serious style upgrades</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-2">
+                  <CheckIcon size={18} className="text-lilac min-w-[18px]" />
+                  <span>Unlimited outfit analyses</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon size={18} className="text-lilac min-w-[18px]" />
+                  <span>Priority feedback</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon size={18} className="text-lilac min-w-[18px]" />
+                  <span>Advanced style recommendations</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckIcon size={18} className="text-lilac min-w-[18px]" />
+                  <span>Seasonal trend insights</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Star size={18} className="text-lilac min-w-[18px] fill-lilac" />
+                  <span className="font-medium">Cancel anytime</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter className="pt-4">
+              <Button
+                onClick={() => handlePlanSelection("subscription")}
+                className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
+                disabled={isLoading['subscription']}
+                size="lg"
+              >
+                {isLoading['subscription'] ? "Processing..." : "Choose Unlimited Plan"}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+
+        <div className="mt-12 text-center max-w-xl mx-auto">
+          <Separator className="mb-6" />
+          <h3 className="text-lg font-medium mb-4">Frequently Asked Questions</h3>
+          <div className="text-sm text-left space-y-4">
+            <div>
+              <h4 className="font-medium mb-1">How does the analysis work?</h4>
+              <p className="text-muted-foreground">Our AI analyzes your outfit photo and provides detailed style recommendations, color coordination advice, and personalized fashion tips.</p>
             </div>
-            <ul className="mb-6 space-y-3">
-              <li className="flex items-center text-sm gap-2">
-                <CreditCard size={18} className="text-lilac" />
-                <span>Unlimited outfit analyses</span>
-              </li>
-            </ul>
-            <Button
-              onClick={() => handlePlanSelection("subscription")}
-              className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
-              disabled={isLoading}
-            >
-              {isLoading ? "Processing..." : "Choose Unlimited Plan"}
-            </Button>
+            <div>
+              <h4 className="font-medium mb-1">Can I cancel my subscription?</h4>
+              <p className="text-muted-foreground">Yes, you can cancel your unlimited plan subscription anytime with no questions asked.</p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-1">How many outfits can I analyze?</h4>
+              <p className="text-muted-foreground">With the one-time plan, you get one outfit analysis. With the unlimited plan, you can analyze as many outfits as you want during your subscription period.</p>
+            </div>
           </div>
         </div>
       </div>
