@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StyleProvider } from "./contexts/StyleContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { NavigationMenu } from "./components/NavigationMenu";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Pages
@@ -17,8 +19,6 @@ import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
 
 const queryClient = new QueryClient();
 
@@ -30,36 +30,27 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <NavigationMenu />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              
-              {/* Protected Routes that don't require subscription */}
-              <Route 
-                path="/pricing" 
-                element={
-                  <ProtectedRoute requiresSubscription={false}>
-                    <Pricing />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/pricing" element={<Pricing />} />
+
+              {/* Protected Routes */}
               <Route 
                 path="/profile" 
                 element={
-                  <ProtectedRoute requiresSubscription={false}>
+                  <ProtectedRoute>
                     <Profile />
                   </ProtectedRoute>
                 }
               />
-
-              {/* Protected Routes with subscription requirement */}
               <Route 
                 path="/upload" 
                 element={
                   <ProtectedRoute>
-                    <NavigationMenu />
                     <Upload />
                   </ProtectedRoute>
                 }
@@ -68,7 +59,6 @@ const App = () => (
                 path="/loading" 
                 element={
                   <ProtectedRoute>
-                    <NavigationMenu />
                     <Loading />
                   </ProtectedRoute>
                 }
@@ -77,7 +67,6 @@ const App = () => (
                 path="/results" 
                 element={
                   <ProtectedRoute>
-                    <NavigationMenu />
                     <Results />
                   </ProtectedRoute>
                 }

@@ -4,7 +4,6 @@ import { Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@/contexts/AuthContext";
 
 const testimonials = [
   {
@@ -39,15 +38,6 @@ const testimonials = [
 export const Testimonials = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-
-  const handleGetStarted = () => {
-    if (!user) {
-      navigate('/signup');
-    } else {
-      navigate('/pricing');
-    }
-  };
 
   return (
     <section className="px-4 py-16 bg-muted/5">
@@ -99,7 +89,7 @@ export const Testimonials = () => {
         
         <div className="mt-12 text-center">
           <Button 
-            onClick={handleGetStarted} 
+            onClick={() => navigate('/upload')} 
             variant="gradient"
             size={isMobile ? "lg" : "xl"} 
             className="rounded-full font-medium w-full max-w-xs md:max-w-md"
