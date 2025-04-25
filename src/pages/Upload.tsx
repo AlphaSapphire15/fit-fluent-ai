@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -107,7 +108,9 @@ const Upload = () => {
             openFileInput={openFileInput}
             onAnalyze={handleAnalyze}
           />
-          <FeedbackToneSelector tone={tone} setTone={setTone} />
+          <div className="my-8">
+            <FeedbackToneSelector tone={tone} setTone={setTone} />
+          </div>
         </div>
       ) : (
         <div className="space-y-6 max-w-2xl mx-auto">
