@@ -2,6 +2,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import React, { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,7 +15,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, hasActiveSubscription, checkSubscriptionStatus } = useAuth();
   const location = useLocation();
-  const isDevelopment = import.meta.env.DEV; // Vite's built-in development flag
+  const isDevelopment = import.meta.env.DEV;
+  const [isAdmin, setIsAdmin] = React.useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .rpc('is_admin');
+        
+        if (!error && data) {
+          setIsAdmin(data);
+        }
+      }
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -22,8 +39,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [user, checkSubscriptionStatus, location.pathname]);
 
-  // Allow access in development mode
-  if (isDevelopment) {
+  // Allow access in development mode or if user is admin
+  if (isDevelopment || isAdmin) {
     return <>{children}</>;
   }
 
