@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -68,6 +69,13 @@ const Upload = () => {
       setPreview(base64);
     };
     reader.readAsDataURL(file);
+  };
+
+  // Define the missing openFileInput function
+  const openFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const handleAnalyze = async () => {
