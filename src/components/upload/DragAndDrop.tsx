@@ -87,6 +87,12 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
     
     fileInputRef.current.click();
   };
+  
+  const handleChangePhoto = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   return (
     <div
@@ -156,6 +162,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
                 size="sm"
                 className="text-sm w-full"
                 onClick={onAnalyze}
+                disabled={isAnalyzing}
               >
                 Analyze Fit
               </Button>
@@ -163,12 +170,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
                 variant="outline"
                 size="sm"
                 className="text-sm w-full bg-white/80"
-                onClick={() => {
-                  // Fix: Call openFileInput to trigger file selection
-                  if (fileInputRef.current) {
-                    fileInputRef.current.click();
-                  }
-                }}
+                onClick={handleChangePhoto}
               >
                 Change Photo
               </Button>

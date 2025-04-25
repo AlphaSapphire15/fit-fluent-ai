@@ -17,7 +17,6 @@ import {
   DialogDescription,
   DialogHeader
 } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
 
 const Upload = () => {
   const { user } = useAuth();
@@ -31,6 +30,8 @@ const Upload = () => {
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
+  const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // If user is not logged in, redirect to login
@@ -51,6 +52,8 @@ const Upload = () => {
   const resetState = () => {
     setPreview(null);
     setAnalysisResult(null);
+    setCurrentFile(null);
+    setIsSubmitting(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -63,6 +66,7 @@ const Upload = () => {
       return;
     }
 
+    setCurrentFile(file);
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
@@ -78,17 +82,23 @@ const Upload = () => {
   };
 
   const handleAnalyze = async () => {
-    if (!preview) return;
+    if (!preview || !currentFile || isSubmitting || isAnalyzing) {
+      toast({
+        title: "Please wait",
+        description: "Your outfit is already being analyzed"
+      });
+      return;
+    }
     
     try {
-      const response = await fetch(preview);
-      const blob = await response.blob();
-      const file = new File([blob], "image.jpg", { type: "image/jpeg" });
-      await analyzeImage(file, tone);
+      setIsSubmitting(true);
+      await analyzeImage(currentFile, tone);
     } catch (error) {
       setDialogMessage("Unable to analyze this image. Please try with a different photo.");
       setShowDialog(true);
       setPreview(null);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -103,7 +113,7 @@ const Upload = () => {
         <div className="max-w-2xl mx-auto">
           <DragAndDrop
             preview={preview}
-            isAnalyzing={isAnalyzing}
+            isAnalyzing={isAnalyzing || isSubmitting}
             onFileChange={handleFile}
             openFileInput={openFileInput}
             onAnalyze={handleAnalyze}
@@ -123,12 +133,14 @@ const Upload = () => {
             score={analysisResult.score}
           />
           <AnalysisResult {...analysisResult} />
-          <Button
-            onClick={resetState}
-            className="w-full bg-neonBlue hover:bg-neonBlue/90 text-white py-4 h-auto text-base rounded-full"
-          >
-            Upload Another Fit
-          </Button>
+          <div className="flex justify-center mt-6">
+            <Button
+              onClick={resetState}
+              className="bg-neonBlue hover:bg-neonBlue/90 text-white py-4 px-8 h-auto text-base rounded-full max-w-xs"
+            >
+              Upload Another Fit
+            </Button>
+          </div>
         </div>
       )}
       

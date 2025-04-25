@@ -37,29 +37,34 @@ serve(async (req) => {
 
     logStep('Sending request to OpenAI');
 
-    // Adjust the system prompt based on the tone selected
-    let systemPrompt = `You are a fashion expert AI that analyzes outfit photos. Provide concise, constructive feedback including:
-      1. A style score out of 100
-      2. A core style description using one of these exact style labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
-      3. 2-3 key strengths
-      4. One specific styling suggestion to elevate the outfit. This should be labeled as "Tip to Elevate:" and should be a clear, actionable suggestion.
-      Keep your feedback constructive and encouraging.`;
+    // Create a more structured prompt that will produce consistent scores
+    let systemPrompt = `You are a fashion expert AI that analyzes outfit photos. Provide structured, consistent feedback including:
+      1. A style score out of 100. Be consistent in your scoring - similar outfit styles should receive similar scores. Focus on objective aspects like fit, color coordination, and overall styling rather than personal preference.
+      2. A core style description using ONE of these exact labels (do not modify or create new labels): "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
+      3. 2-3 key strengths in bullet point format, labeled as "What's Working"
+      4. One specific styling suggestion to elevate the outfit, clearly labeled as "Tip to Elevate"
+
+      Format your response in a clean, structured way that's easy to parse. Your analysis should be objective and based on fashion principles rather than subjective taste.
+      
+      Always format scores consistently as a number without any additional characters (e.g., "85" not "85/100").`;
 
     // Adjust the tone if specified
     if (tone === 'chill') {
-      systemPrompt = `You are a laid-back, friendly fashion expert that analyzes outfit photos. With a casual, conversational tone, provide feedback including:
-        1. A style score out of 100
-        2. A core style description using one of these exact style labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
-        3. 2-3 key strengths, phrased in a friendly way
-        4. One chill suggestion to elevate the look, clearly labeled as "Chill Suggestion:"
-        Keep it casual but helpful, like advice from a stylish friend.`;
+      systemPrompt = `You are a laid-back, friendly fashion expert analyzing outfit photos. With a casual, conversational tone, provide consistent feedback including:
+        1. A style score out of 100. Be consistent in scoring - similar outfits should get similar scores. Base your score on objective aspects like fit, color coordination, and styling rather than personal preference.
+        2. A core style description using ONE of these exact labels (do not modify them): "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
+        3. 2-3 key strengths, labeled as "What's Working"
+        4. One chill suggestion to elevate the look, labeled as "Tip to Elevate"
+        
+        Format your response in a clean, structured way that's easy to parse. Always format scores consistently as a number without any additional characters (e.g., "85" not "85/100").`;
     } else if (tone === 'creative') {
-      systemPrompt = `You are an artistic, imaginative fashion expert analyzing outfit photos. With colorful language and metaphors, provide vibrant feedback including:
-        1. A style score out of 100
-        2. A core style description using one of these exact style labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
-        3. 2-3 key strengths, described with creative flair
-        4. One inspired, unique suggestion to elevate the outfit, clearly labeled as "Creative Suggestion to Elevate:"
-        Make your descriptions evocative and memorable, like a fashion editorial.`;
+      systemPrompt = `You are an artistic, imaginative fashion expert analyzing outfit photos. With colorful language and metaphors, provide vibrant but consistent feedback including:
+        1. A style score out of 100. Be consistent in your scoring - similar outfits should receive similar scores. Base your score on objective aspects like fit, color coordination, and overall styling rather than personal preference.
+        2. A core style description using ONE of these exact labels (do not modify or create new labels): "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
+        3. 2-3 key strengths with creative flair, labeled as "What's Working"
+        4. One inspired, unique suggestion to elevate the outfit, clearly labeled as "Tip to Elevate"
+        
+        Format your response in a clean, structured way that's easy to parse. Always format scores consistently as a number without any additional characters (e.g., "85" not "85/100").`;
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -78,11 +83,12 @@ serve(async (req) => {
           {
             role: 'user',
             content: [
-              { type: 'text', text: 'Please analyze this outfit:' },
+              { type: 'text', text: 'Please analyze this outfit and provide structured feedback:' },
               { type: 'image_url', image_url: imageData }
             ]
           }
-        ]
+        ],
+        temperature: 0.5, // Lower temperature for more consistent responses
       }),
     });
 

@@ -47,7 +47,12 @@ const AnalysisResult = ({ score, styleCore, strengths, suggestion }: AnalysisRes
           <ul className="space-y-3">
             <li className="flex items-start gap-2">
               <Sparkles size={18} className="text-lilac shrink-0 mt-0.5" />
-              <span>{suggestion || "Try adding a statement accessory to elevate your look."}</span>
+              <span>
+                {(suggestion || "Try adding a statement accessory to elevate your look.")
+                  .replace(/^\*\*(\s|$)/, '') // Remove leading ** and optional space
+                  .replace(/^Tip to Elevate:?\s*/i, '') // Remove "Tip to Elevate:" prefix if present
+                }
+              </span>
             </li>
           </ul>
         </div>
