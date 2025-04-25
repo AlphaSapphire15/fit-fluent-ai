@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { StyleProvider } from "./contexts/StyleContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { NavigationMenu } from "./components/NavigationMenu";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Pages
 import Landing from "./pages/Landing";
