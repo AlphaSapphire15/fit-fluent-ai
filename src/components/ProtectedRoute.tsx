@@ -37,7 +37,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (user) {
       checkSubscriptionStatus();
     }
-  }, [user, checkSubscriptionStatus, location.pathname]);
+  }, [user, checkSubscriptionStatus]);
 
   // Allow access in development mode or if user is admin
   if (isDevelopment || isAdmin) {
@@ -45,9 +45,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!user) {
+    // Store the attempted path to redirect back after login
     return <Navigate to={`/login?next=${location.pathname}`} state={{ from: location }} replace />;
   }
   
+  // Only check subscription if the route requires it
   if (requiresSubscription && !hasActiveSubscription) {
     return <Navigate to="/pricing" state={{ from: location }} replace />;
   }
