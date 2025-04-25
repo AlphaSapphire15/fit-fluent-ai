@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +79,46 @@ export const useImageAnalysis = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const { toast } = useToast();
 
+  const findMatchingStyleCore = async (styleText: string): Promise<{ base: string; flavor: string; full_label: string; description: string | null } | null> => {
+    try {
+      // Fetch all style cores from Supabase
+      const { data: styleCores, error } = await supabase
+        .from('style_cores')
+        .select('*');
+
+      if (error) {
+        console.error('Error fetching style cores:', error);
+        return null;
+      }
+
+      if (!styleCores || styleCores.length === 0) {
+        console.log('No style cores found in database');
+        return null;
+      }
+
+      console.log('Retrieved style cores:', styleCores);
+      
+      // Find the best match by checking if the style core text appears in the AI-generated style core
+      const matchedCore = styleCores.find(core => 
+        styleText.toLowerCase().includes(core.base.toLowerCase()) ||
+        styleText.toLowerCase().includes(core.flavor.toLowerCase()) ||
+        (core.full_label && styleText.toLowerCase().includes(core.full_label.toLowerCase()))
+      );
+
+      if (matchedCore) {
+        console.log('Found matching style core:', matchedCore);
+        return matchedCore;
+      }
+      
+      // If no exact match found, return first style core as default (fallback)
+      console.log('No matching style core found, using default:', styleCores[0]);
+      return styleCores[0];
+    } catch (err) {
+      console.error('Error in findMatchingStyleCore:', err);
+      return null;
+    }
+  };
+
   const analyzeImage = async (inputBase64OrFile: string | File, tone: string = 'straightforward') => {
     const startTime = Date.now();
     setIsAnalyzing(true);
@@ -106,17 +147,38 @@ export const useImageAnalysis = () => {
 
       console.log("Received analysis:", data.analysis);
       const analysis = data.analysis;
-      const matches = {
-        score: parseInt(analysis.match(/(\d+)(?=\/100)/)?.[0] || "0"),
-        styleCore: analysis.match(/core style.*?:\s*(.*?)(?=\n|$)/i)?.[1] || "",
-        strengths: (analysis.match(/key strengths:(.*?)(?=potential improvements|\n\n)/is)?.[1] || "")
-          .split('\n')
-          .filter((s: string) => s.trim())
-          .map((s: string) => s.replace(/^[•\-\s]+/, '').trim()),
-        suggestion: (analysis.match(/styling suggestion:(.*?)(?=\n|$)/i)?.[1] || "").trim()
+      
+      // Extract the basic info from the analysis
+      const scoreMatch = analysis.match(/(\d+)(?=\/100)/);
+      const score = scoreMatch ? parseInt(scoreMatch[0]) : 0;
+      
+      const styleTextMatch = analysis.match(/core style.*?:\s*(.*?)(?=\n|$)/i);
+      const styleText = styleTextMatch ? styleTextMatch[1].trim() : "";
+      
+      // Find matching style core from database
+      const matchedStyle = await findMatchingStyleCore(styleText);
+      
+      // Get formatted style core text using the matched database entry if available
+      const formattedStyleCore = matchedStyle ? matchedStyle.full_label : styleText;
+      
+      // Extract strengths and suggestions
+      const strengthsText = (analysis.match(/key strengths:(.*?)(?=potential improvements|\n\n)/is)?.[1] || "").trim();
+      const strengths = strengthsText
+        .split('\n')
+        .filter((s: string) => s.trim())
+        .map((s: string) => s.replace(/^[•\-\s]+/, '').trim());
+      
+      const suggestionText = (analysis.match(/styling suggestion:(.*?)(?=\n|$)/i)?.[1] || "").trim();
+
+      const result = {
+        score,
+        styleCore: formattedStyleCore,
+        strengths,
+        suggestion: suggestionText
       };
 
-      setAnalysisResult(matches);
+      console.log("Processed analysis result:", result);
+      setAnalysisResult(result);
     } catch (err) {
       console.error('Analysis error:', err);
       toast({

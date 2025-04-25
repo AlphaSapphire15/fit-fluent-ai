@@ -11,6 +11,7 @@ interface DragAndDropProps {
   onFileChange: (file: File) => void;
   openFileInput: () => void;
   onAnalyze: () => void;
+  score?: number;
 }
 
 const DragAndDrop: React.FC<DragAndDropProps> = ({
@@ -19,6 +20,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
   onFileChange,
   openFileInput,
   onAnalyze,
+  score
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -137,6 +139,14 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
             alt="Preview"
             className="w-full h-auto rounded-lg object-cover aspect-[4/5]"
           />
+          {score && (
+            <div className="absolute top-4 right-4 w-16 h-16 rounded-full flex items-center justify-center bg-black/80 backdrop-blur-sm text-white border border-lilac">
+              <div className="text-center">
+                <span className="text-xl font-bold">{score}</span>
+                <span className="text-sm">/100</span>
+              </div>
+            </div>
+          )}
           {isAnalyzing ? (
             <LoadingOverlay />
           ) : (

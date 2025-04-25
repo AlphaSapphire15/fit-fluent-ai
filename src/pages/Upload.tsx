@@ -114,6 +114,14 @@ const Upload = () => {
         </div>
       ) : (
         <div className="space-y-6 max-w-2xl mx-auto">
+          <DragAndDrop
+            preview={preview}
+            isAnalyzing={false}
+            onFileChange={handleFile}
+            openFileInput={openFileInput}
+            onAnalyze={handleAnalyze}
+            score={analysisResult.score}
+          />
           <AnalysisResult {...analysisResult} />
           <Button
             onClick={resetState}
