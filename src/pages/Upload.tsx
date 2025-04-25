@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -57,8 +56,8 @@ const Upload = () => {
   };
 
   const handleFile = (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      setDialogMessage("Please upload an image file (JPG, PNG, etc).");
+    if (!file.type.match(/^image\/(jpeg|jpg|png|gif|webp)$/)) {
+      setDialogMessage("Please upload a supported image format (JPG, PNG, GIF, or WebP).");
       setShowDialog(true);
       return;
     }
@@ -71,7 +70,6 @@ const Upload = () => {
     reader.readAsDataURL(file);
   };
 
-  // Define the missing openFileInput function
   const openFileInput = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -85,7 +83,7 @@ const Upload = () => {
       const response = await fetch(preview);
       const blob = await response.blob();
       const file = new File([blob], "image.jpg", { type: "image/jpeg" });
-      await analyzeImage(file);
+      await analyzeImage(file, tone);
     } catch (error) {
       setDialogMessage("Unable to analyze this image. Please try with a different photo.");
       setShowDialog(true);
@@ -116,7 +114,7 @@ const Upload = () => {
           <AnalysisResult {...analysisResult} />
           <Button
             onClick={resetState}
-            className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto text-lg rounded-full"
+            className="w-full bg-neonBlue hover:bg-neonBlue/90 text-white py-6 h-auto text-lg rounded-full"
           >
             Upload Another Fit
           </Button>

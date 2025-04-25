@@ -89,7 +89,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
   return (
     <div
       className={`glass-card rounded-xl p-4 mb-6 relative ${
-        isDragging ? "border-2 border-lilac glow-border" : ""
+        isDragging ? "border-2 border-neonBlue glow-border" : ""
       } ${!preview ? "h-64" : ""}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -97,18 +97,18 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
     >
       {!preview ? (
         <div className="h-full flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-full bg-lilac/10 flex items-center justify-center mb-4">
-            <UploadIcon size={24} className="text-lilac" />
+          <div className="w-16 h-16 rounded-full bg-neonBlue/10 flex items-center justify-center mb-4">
+            <UploadIcon size={24} className="text-neonBlue" />
           </div>
           <p className="mb-2 font-medium">Drag and drop your photo here</p>
           <p className="text-sm text-muted-foreground mb-4">
             Or use one of the options below
           </p>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
             <Button 
               variant="gradient"
               size="sm"
-              className="text-sm"
+              className="text-sm w-full"
               onClick={handleTakePhoto}
             >
               <Camera size={14} className="mr-1" /> Take Picture
@@ -117,7 +117,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
               variant="gradient"
               size="sm"
               onClick={openFileInput}
-              className="text-sm"
+              className="text-sm w-full"
             >
               Browse Files
             </Button>
@@ -140,11 +140,11 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
           {isAnalyzing ? (
             <LoadingOverlay />
           ) : (
-            <div className="absolute bottom-3 right-3 flex gap-2">
+            <div className="absolute bottom-0 left-0 right-0 p-3 flex flex-col gap-2 bg-black/50 backdrop-blur-sm">
               <Button
                 variant="gradient"
                 size="sm"
-                className="text-sm"
+                className="text-sm w-full"
                 onClick={onAnalyze}
               >
                 Analyze Fit
@@ -152,7 +152,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="text-sm bg-white/80"
+                className="text-sm w-full bg-white/80"
                 onClick={openFileInput}
               >
                 Change Photo

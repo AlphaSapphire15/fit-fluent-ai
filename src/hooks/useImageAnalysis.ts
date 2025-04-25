@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,18 +78,17 @@ export const useImageAnalysis = () => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const { toast } = useToast();
 
-  const analyzeImage = async (inputBase64OrFile: string | File) => {
+  const analyzeImage = async (inputBase64OrFile: string | File, tone: string = 'straightforward') => {
     const startTime = Date.now();
     setIsAnalyzing(true);
 
     try {
-      console.log("Calling analyze-outfit function with image data");
+      console.log("Calling analyze-outfit function with image data and tone:", tone);
       
-      // Process the image to ensure it's in the right format
       const imageUrl = await prepareImageForAnalysis(inputBase64OrFile);
       
       const { data, error } = await supabase.functions.invoke('analyze-outfit', {
-        body: { imageUrl }
+        body: { imageUrl, tone }
       });
 
       if (error) {
@@ -126,7 +124,7 @@ export const useImageAnalysis = () => {
         title: "Analysis failed",
         description: "Please try again with a different JPG/PNG image.",
       });
-      throw err; // Re-throw to allow the upload component to handle the error
+      throw err;
     } finally {
       setIsAnalyzing(false);
     }
