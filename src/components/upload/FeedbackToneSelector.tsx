@@ -11,9 +11,9 @@ interface FeedbackToneSelectorProps {
 
 const FeedbackToneSelector: React.FC<FeedbackToneSelectorProps> = ({ tone, setTone }) => {
   const toneOptions = [
-    { value: "chill", label: "Chill", description: "Casual and friendly vibes" },
-    { value: "straightforward", label: "Straightforward", description: "Clear and direct feedback" },
-    { value: "creative", label: "Creative", description: "Artistic and expressive" }
+    { value: "chill", label: "Chill" },
+    { value: "straightforward", label: "Straightforward" },
+    { value: "creative", label: "Creative" }
   ];
 
   return (
@@ -27,19 +27,14 @@ const FeedbackToneSelector: React.FC<FeedbackToneSelectorProps> = ({ tone, setTo
                 variant="gradient"
                 className={`w-full h-auto p-6 rounded-xl transition-all duration-300
                   ${tone === option.value 
-                    ? 'shadow-[0_0_25px_rgba(167,139,250,0.6)] scale-[1.02]' 
+                    ? 'bg-opacity-90 shadow-[0_0_30px_rgba(167,139,250,0.8)] scale-110 border-2 border-white/20' 
                     : 'hover:shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:scale-105'
                   }`}
                 onClick={() => setTone(option.value)}
               >
-                <div className="flex flex-col items-center space-y-2 w-full">
-                  <span className="font-medium text-lg text-white">
-                    {option.label}
-                  </span>
-                  <span className="text-white/90 text-sm font-light">
-                    {option.description}
-                  </span>
-                </div>
+                <span className="font-semibold text-xl text-white tracking-wide">
+                  {option.label}
+                </span>
               </Button>
             </div>
           ))}
