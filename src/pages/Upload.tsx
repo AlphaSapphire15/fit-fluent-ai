@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -56,7 +55,7 @@ const Upload = () => {
     }
   };
 
-  const handleFile = async (file: File) => {
+  const handleFile = (file: File) => {
     if (!file.type.startsWith("image/")) {
       setDialogMessage("Please upload an image file (JPG, PNG, etc).");
       setShowDialog(true);
@@ -64,22 +63,26 @@ const Upload = () => {
     }
 
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = (e) => {
       const base64 = e.target?.result as string;
       setPreview(base64);
-      try {
-        await analyzeImage(file);
-      } catch (error) {
-        setDialogMessage("Unable to analyze this image. Please try with a different photo.");
-        setShowDialog(true);
-        setPreview(null);
-      }
     };
     reader.readAsDataURL(file);
   };
 
-  const openFileInput = () => {
-    fileInputRef.current?.click();
+  const handleAnalyze = async () => {
+    if (!preview) return;
+    
+    try {
+      const response = await fetch(preview);
+      const blob = await response.blob();
+      const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+      await analyzeImage(file);
+    } catch (error) {
+      setDialogMessage("Unable to analyze this image. Please try with a different photo.");
+      setShowDialog(true);
+      setPreview(null);
+    }
   };
 
   return (
@@ -90,17 +93,18 @@ const Upload = () => {
       </div>
 
       {!analysisResult ? (
-        <>
+        <div className="max-w-2xl mx-auto">
           <DragAndDrop
             preview={preview}
             isAnalyzing={isAnalyzing}
             onFileChange={handleFile}
             openFileInput={openFileInput}
+            onAnalyze={handleAnalyze}
           />
           <FeedbackToneSelector tone={tone} setTone={setTone} />
-        </>
+        </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-2xl mx-auto">
           <AnalysisResult {...analysisResult} />
           <Button
             onClick={resetState}

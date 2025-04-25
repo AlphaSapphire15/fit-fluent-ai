@@ -9,6 +9,24 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          is_admin?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+        }
+        Relationships: []
+      }
       style_cores: {
         Row: {
           base: string
@@ -86,7 +104,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

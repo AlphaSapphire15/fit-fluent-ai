@@ -3,12 +3,14 @@ import React, { useRef, useState } from "react";
 import { Camera, Upload as UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import LoadingOverlay from "./LoadingOverlay";
 
 interface DragAndDropProps {
   preview: string | null;
   isAnalyzing: boolean;
   onFileChange: (file: File) => void;
   openFileInput: () => void;
+  onAnalyze: () => void;
 }
 
 const DragAndDrop: React.FC<DragAndDropProps> = ({
@@ -16,6 +18,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
   isAnalyzing,
   onFileChange,
   openFileInput,
+  onAnalyze,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -85,7 +88,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
 
   return (
     <div
-      className={`glass-card rounded-xl p-4 mb-6 ${
+      className={`glass-card rounded-xl p-4 mb-6 relative ${
         isDragging ? "border-2 border-lilac glow-border" : ""
       } ${!preview ? "h-64" : ""}`}
       onDragOver={handleDragOver}
@@ -134,16 +137,28 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
             alt="Preview"
             className="w-full h-auto rounded-lg object-cover aspect-[4/5]"
           />
-          <div className="absolute bottom-3 right-3 flex gap-2">
-            <Button
-              variant="gradient"
-              size="sm"
-              className="text-sm"
-              onClick={openFileInput}
-            >
-              Change Photo
-            </Button>
-          </div>
+          {isAnalyzing ? (
+            <LoadingOverlay />
+          ) : (
+            <div className="absolute bottom-3 right-3 flex gap-2">
+              <Button
+                variant="gradient"
+                size="sm"
+                className="text-sm"
+                onClick={onAnalyze}
+              >
+                Analyze Fit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-sm bg-white/80"
+                onClick={openFileInput}
+              >
+                Change Photo
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

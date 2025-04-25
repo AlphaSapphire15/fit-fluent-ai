@@ -1,6 +1,6 @@
 
 import React from "react";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Sparkles } from "lucide-react";
 
 interface AnalysisResultProps {
   score: number;
@@ -11,54 +11,47 @@ interface AnalysisResultProps {
 
 const AnalysisResult = ({ score, styleCore, strengths, suggestion }: AnalysisResultProps) => {
   return (
-    <div className="glass-card rounded-xl p-6 space-y-6">
-      {/* Score Ring */}
-      <div className="flex justify-center">
-        <div className="relative w-32 h-32">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="rgba(167, 139, 250, 0.1)"
-              strokeWidth="8"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="rgba(167, 139, 250, 0.8)"
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={`${(score / 100) * 283}, 283`}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-bold">{score}</span>
-            <span className="text-sm text-muted-foreground">out of 100</span>
-          </div>
+    <div className="space-y-6">
+      <div className="relative rounded-xl overflow-hidden">
+        <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white px-4 py-2 rounded-full">
+          <span className="text-2xl font-bold">{score}</span>
+          <span className="text-sm ml-1">/100</span>
         </div>
       </div>
 
-      {/* Style Core */}
-      <div className="text-center">
-        <h2 className="text-2xl font-satoshi font-bold">{styleCore}</h2>
+      <div className="glass-card rounded-xl p-6 space-y-6">
+        {/* Style Core */}
+        <div className="text-center">
+          <div className="inline-block bg-lilac/10 px-3 py-1 rounded-full text-xs font-medium text-lilac mb-2">
+            STYLE CORE
+          </div>
+          <h2 className="text-2xl font-satoshi font-bold">{styleCore}</h2>
+        </div>
+
+        {/* What's Working */}
+        <div>
+          <h3 className="font-satoshi font-bold text-lg mb-4">What's Working</h3>
+          <ul className="space-y-3">
+            {strengths.map((strength, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
+                <span>{strength}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Tips to Elevate */}
+        <div>
+          <h3 className="font-satoshi font-bold text-lg mb-4">Tips to Elevate</h3>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-2">
+              <Sparkles size={18} className="text-lilac shrink-0 mt-0.5" />
+              <span>{suggestion}</span>
+            </li>
+          </ul>
+        </div>
       </div>
-
-      {/* Strengths */}
-      <ul className="space-y-2">
-        {strengths.map((strength, index) => (
-          <li key={index} className="flex items-start gap-2">
-            <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
-            <span>{strength}</span>
-          </li>
-        ))}
-      </ul>
-
-      {/* Suggestion */}
-      <p className="text-muted-foreground">{suggestion}</p>
     </div>
   );
 };

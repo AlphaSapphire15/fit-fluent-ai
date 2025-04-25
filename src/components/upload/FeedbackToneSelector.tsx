@@ -16,14 +16,14 @@ const FeedbackToneSelector: React.FC<FeedbackToneSelectorProps> = ({ tone, setTo
   ];
 
   return (
-    <div className="mb-10">
-      <h2 className="text-lg font-medium mb-4">How would you like your feedback?</h2>
+    <div className="mb-6">
+      <h2 className="text-lg font-medium mb-4">Select your feedback style:</h2>
       <RadioGroup value={tone} onValueChange={setTone}>
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {toneOptions.map((option) => (
             <div key={option.value} className="w-full">
               <div 
-                className={`glass-card rounded-full p-4 cursor-pointer transition-all duration-300
+                className={`glass-card rounded-xl p-4 cursor-pointer transition-all duration-300 h-full
                   ${tone === option.value 
                     ? "border-2 border-lilac shadow-[0_0_15px_rgba(167,139,250,0.5)] bg-lilac/10" 
                     : "border-2 border-transparent hover:border-lilac/30 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]"}`}
@@ -35,12 +35,12 @@ const FeedbackToneSelector: React.FC<FeedbackToneSelectorProps> = ({ tone, setTo
                 />
                 <Label
                   htmlFor={option.value}
-                  className="flex flex-col cursor-pointer"
+                  className="flex flex-col cursor-pointer h-full"
                 >
-                  <span className={`font-medium text-lg ${tone === option.value ? "text-lilac" : ""}`}>
+                  <span className={`font-medium text-lg mb-2 ${tone === option.value ? "text-lilac" : ""}`}>
                     {option.label}
                   </span>
-                  <span className="text-muted-foreground text-sm mt-1">
+                  <span className="text-muted-foreground text-sm">
                     {option.description}
                   </span>
                 </Label>
