@@ -1,7 +1,7 @@
 
 /// <reference types="vite/client" />
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -15,6 +15,10 @@ interface AuthContextType {
   signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   initiateCheckout: (planType: "one-time" | "subscription") => Promise<void>;
+  hasActiveSubscription: boolean;
+  subscriptionEndDate: string | null;
+  checkSubscriptionStatus: () => Promise<void>;
+  isCheckingSubscription: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -27,6 +31,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const { toast } = useToast();
   const [isNewSignup, setIsNewSignup] = useState(false);
+  
+  // Subscription state
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null);
+  const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+
+  // Function to check subscription status
+  const checkSubscriptionStatus = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setIsCheckingSubscription(true);
+      
+      // Call the check-subscription function
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) {
+        console.error("Error checking subscription status:", error);
+        throw error;
+      }
+      
+      console.log("Subscription check result:", data);
+      
+      if (data) {
+        setHasActiveSubscription(!!data.subscribed);
+        setSubscriptionEndDate(data.subscription_end || null);
+      } else {
+        setHasActiveSubscription(false);
+        setSubscriptionEndDate(null);
+      }
+    } catch (error) {
+      console.error("Failed to check subscription status:", error);
+      setHasActiveSubscription(false);
+      setSubscriptionEndDate(null);
+    } finally {
+      setIsCheckingSubscription(false);
+    }
+  }, [user]);
 
   const initiateCheckout = async (planType: "one-time" | "subscription") => {
     if (isLoadingCheckout) return;
@@ -90,6 +132,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const nextPath = urlParams.get('next');
           const plan = urlParams.get('plan') as "one-time" | "subscription" | null;
           
+          // Update the user's subscription status right after signing in
+          setTimeout(() => {
+            checkSubscriptionStatus();
+          }, 0);
+          
           // If isNewSignup is true or coming from signup page with a plan parameter,
           // direct to pricing
           if (isNewSignup || (nextPath === 'payment' && plan)) {
@@ -105,6 +152,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             navigate('/', { replace: true });
           }
         } else if (event === 'SIGNED_OUT') {
+          // Reset subscription state on sign out
+          setHasActiveSubscription(false);
+          setSubscriptionEndDate(null);
           navigate('/');
         }
       }
@@ -113,10 +163,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Check subscription status if user is authenticated
+      if (session?.user) {
+        checkSubscriptionStatus();
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location, isNewSignup]);
+  }, [navigate, location, isNewSignup, checkSubscriptionStatus]);
 
   const login = async () => {
     await supabase.auth.signInWithOAuth({
@@ -171,7 +226,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, login, loginWithEmail, signup, logout, initiateCheckout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      login, 
+      loginWithEmail, 
+      signup, 
+      logout, 
+      initiateCheckout, 
+      hasActiveSubscription,
+      subscriptionEndDate,
+      checkSubscriptionStatus,
+      isCheckingSubscription
+    }}>
       {children}
     </AuthContext.Provider>
   );

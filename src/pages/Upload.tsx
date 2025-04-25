@@ -20,7 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 const Upload = () => {
-  const { user } = useAuth();
+  const { user, hasActiveSubscription, checkSubscriptionStatus } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
@@ -33,20 +33,38 @@ const Upload = () => {
   const [dialogMessage, setDialogMessage] = useState("");
 
   useEffect(() => {
+    // If we have a session_id in the URL, it means payment was successful
+    // Refresh subscription status
+    if (sessionId) {
+      checkSubscriptionStatus().then(() => {
+        toast({
+          title: "Payment Successful!",
+          description: "Your payment was successful. You can now analyze your outfit."
+        });
+      });
+    }
+
     // If user is not logged in, redirect to login
     if (!user) {
       navigate("/login?next=/upload");
       return;
     }
-
-    // If we have a session_id in the URL, show a welcome toast
-    if (sessionId) {
-      toast({
-        title: "Payment Successful!",
-        description: "Your payment was successful. You can now analyze your outfit."
+    
+    // If user is logged in but doesn't have an active subscription, redirect to pricing
+    if (user && !hasActiveSubscription && !sessionId) {
+      // Check subscription status first to make sure it's up to date
+      checkSubscriptionStatus().then(() => {
+        if (!hasActiveSubscription) {
+          console.log("No active subscription, redirecting to pricing");
+          navigate("/pricing");
+          toast({
+            title: "Subscription Required",
+            description: "Please purchase a subscription to analyze your outfit."
+          });
+        }
       });
     }
-  }, [user, navigate, sessionId, toast]);
+  }, [user, navigate, sessionId, toast, hasActiveSubscription, checkSubscriptionStatus]);
 
   const resetState = () => {
     setPreview(null);

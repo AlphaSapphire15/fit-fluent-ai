@@ -30,7 +30,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <NavigationMenu />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Landing />} />
@@ -38,15 +37,7 @@ const App = () => (
               <Route path="/signup" element={<Signup />} />
               <Route path="/pricing" element={<Pricing />} />
 
-              {/* Protected Routes */}
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
+              {/* Protected Routes with subscription requirement */}
               <Route 
                 path="/upload" 
                 element={
@@ -68,6 +59,16 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Results />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Protected Routes that don't require subscription */}
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute requiresSubscription={false}>
+                    <Profile />
                   </ProtectedRoute>
                 }
               />

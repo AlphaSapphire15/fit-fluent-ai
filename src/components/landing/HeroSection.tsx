@@ -12,9 +12,9 @@ export const HeroSection = () => {
 
   const handleUpload = () => {
     if (!user) {
-      navigate('/login?next=/upload');
+      navigate('/signup');
     } else {
-      navigate('/upload');
+      navigate('/pricing');
     }
   };
 
@@ -36,7 +36,7 @@ export const HeroSection = () => {
         className="rounded-full font-medium shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_25px_rgba(167,139,250,0.6)] w-full max-w-xs md:max-w-md mb-12"
       >
         <Camera className="mr-2 w-5 h-5" />
-        {user ? "Analyze Your Outfit" : "Sign In to Upload"}
+        Get Started
       </Button>
 
       {/* Before/After Comparison */}
