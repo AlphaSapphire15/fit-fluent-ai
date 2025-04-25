@@ -145,7 +145,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
             alt="Preview"
             className="w-full h-auto rounded-lg object-cover aspect-[4/5]"
           />
-          {score && (
+          {score !== undefined && !isAnalyzing && (
             <div className="absolute top-4 right-4 w-16 h-16 rounded-full flex items-center justify-center bg-black/80 backdrop-blur-sm text-white border border-lilac">
               <div className="text-center">
                 <span className="text-xl font-bold">{score}</span>

@@ -66,6 +66,8 @@ const Upload = () => {
       return;
     }
 
+    // Reset analysis result when changing image
+    setAnalysisResult(null);
     setCurrentFile(file);
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -126,7 +128,7 @@ const Upload = () => {
         <div className="space-y-6 max-w-2xl mx-auto">
           <DragAndDrop
             preview={preview}
-            isAnalyzing={false}
+            isAnalyzing={isAnalyzing || isSubmitting}
             onFileChange={handleFile}
             openFileInput={openFileInput}
             onAnalyze={handleAnalyze}
@@ -136,7 +138,7 @@ const Upload = () => {
           <div className="flex justify-center mt-6">
             <Button
               onClick={resetState}
-              className="bg-neonBlue hover:bg-neonBlue/90 text-white py-4 px-8 h-auto text-base rounded-full max-w-xs"
+              className="bg-neonBlue hover:bg-neonBlue/90 text-white py-2 px-6 h-auto text-base rounded-full max-w-xs"
             >
               Upload Another Fit
             </Button>

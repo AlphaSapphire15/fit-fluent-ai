@@ -7,6 +7,9 @@ const LoadingOverlay = () => {
   const [progress, setProgress] = React.useState(0);
   
   React.useEffect(() => {
+    // Reset progress when component mounts
+    setProgress(0);
+    
     const timer = setTimeout(() => {
       setProgress(10);
     }, 100);
@@ -32,7 +35,7 @@ const LoadingOverlay = () => {
   }, []);
   
   return (
-    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center text-white p-6">
+    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center text-white p-6 z-10">
       <Loader className="w-8 h-8 animate-spin mb-4" />
       <p className="text-lg font-medium mb-2">Analyzing your fit...</p>
       <p className="text-sm text-white/80 mb-4">This will take a few seconds</p>
