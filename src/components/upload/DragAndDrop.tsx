@@ -163,10 +163,22 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
                 variant="outline"
                 size="sm"
                 className="text-sm w-full bg-white/80"
-                onClick={openFileInput}
+                onClick={() => {
+                  // Fix: Call openFileInput to trigger file selection
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
               >
                 Change Photo
               </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileInputChange}
+                accept="image/*"
+                className="hidden"
+              />
             </div>
           )}
         </div>

@@ -12,13 +12,6 @@ interface AnalysisResultProps {
 const AnalysisResult = ({ score, styleCore, strengths, suggestion }: AnalysisResultProps) => {
   return (
     <div className="space-y-6">
-      <div className="relative rounded-xl overflow-hidden">
-        <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm text-white px-4 py-2 rounded-full">
-          <span className="text-2xl font-bold">{score}</span>
-          <span className="text-sm ml-1">/100</span>
-        </div>
-      </div>
-
       <div className="glass-card rounded-xl p-6 space-y-6">
         {/* Style Core */}
         <div className="text-center">
@@ -32,22 +25,29 @@ const AnalysisResult = ({ score, styleCore, strengths, suggestion }: AnalysisRes
         <div>
           <h3 className="font-satoshi font-bold text-lg mb-4">What's Working</h3>
           <ul className="space-y-3">
-            {strengths.map((strength, index) => (
-              <li key={index} className="flex items-start gap-2">
+            {strengths && strengths.length > 0 ? (
+              strengths.map((strength, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
+                  <span>{strength}</span>
+                </li>
+              ))
+            ) : (
+              <li className="flex items-start gap-2">
                 <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
-                <span>{strength}</span>
+                <span>Great overall style balance</span>
               </li>
-            ))}
+            )}
           </ul>
         </div>
 
         {/* Tips to Elevate */}
         <div>
-          <h3 className="font-satoshi font-bold text-lg mb-4">Tips to Elevate</h3>
+          <h3 className="font-satoshi font-bold text-lg mb-4">Tip to Elevate</h3>
           <ul className="space-y-3">
             <li className="flex items-start gap-2">
               <Sparkles size={18} className="text-lilac shrink-0 mt-0.5" />
-              <span>{suggestion}</span>
+              <span>{suggestion || "Try adding a statement accessory to elevate your look."}</span>
             </li>
           </ul>
         </div>

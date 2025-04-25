@@ -125,7 +125,7 @@ const Upload = () => {
           <AnalysisResult {...analysisResult} />
           <Button
             onClick={resetState}
-            className="w-full bg-neonBlue hover:bg-neonBlue/90 text-white py-6 h-auto text-lg rounded-full"
+            className="w-full bg-neonBlue hover:bg-neonBlue/90 text-white py-4 h-auto text-base rounded-full"
           >
             Upload Another Fit
           </Button>

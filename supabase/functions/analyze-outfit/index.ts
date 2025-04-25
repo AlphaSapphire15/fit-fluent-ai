@@ -42,7 +42,7 @@ serve(async (req) => {
       1. A style score out of 100
       2. A core style description using one of these exact style labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
       3. 2-3 key strengths
-      4. One specific styling suggestion to elevate the outfit
+      4. One specific styling suggestion to elevate the outfit. This should be labeled as "Tip to Elevate:" and should be a clear, actionable suggestion.
       Keep your feedback constructive and encouraging.`;
 
     // Adjust the tone if specified
@@ -51,14 +51,14 @@ serve(async (req) => {
         1. A style score out of 100
         2. A core style description using one of these exact style labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
         3. 2-3 key strengths, phrased in a friendly way
-        4. One chill suggestion to elevate the look
+        4. One chill suggestion to elevate the look, clearly labeled as "Chill Suggestion:"
         Keep it casual but helpful, like advice from a stylish friend.`;
     } else if (tone === 'creative') {
       systemPrompt = `You are an artistic, imaginative fashion expert analyzing outfit photos. With colorful language and metaphors, provide vibrant feedback including:
         1. A style score out of 100
         2. A core style description using one of these exact style labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
         3. 2-3 key strengths, described with creative flair
-        4. One inspired, unique suggestion to elevate the outfit
+        4. One inspired, unique suggestion to elevate the outfit, clearly labeled as "Creative Suggestion to Elevate:"
         Make your descriptions evocative and memorable, like a fashion editorial.`;
     }
 

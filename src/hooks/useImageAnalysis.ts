@@ -162,19 +162,24 @@ export const useImageAnalysis = () => {
       const formattedStyleCore = matchedStyle ? matchedStyle.full_label : styleText;
       
       // Extract strengths and suggestions
-      const strengthsText = (analysis.match(/key strengths:(.*?)(?=potential improvements|\n\n)/is)?.[1] || "").trim();
+      const strengthsText = (analysis.match(/key strengths:(.*?)(?=(?:tip|suggestion|to elevate|$))/is)?.[1] || "").trim();
       const strengths = strengthsText
         .split('\n')
         .filter((s: string) => s.trim())
-        .map((s: string) => s.replace(/^[•\-\s]+/, '').trim());
+        .map((s: string) => s.replace(/^[•\-\s\d\.\*]+/, '').trim());
       
-      const suggestionText = (analysis.match(/styling suggestion:(.*?)(?=\n|$)/i)?.[1] || "").trim();
+      // Fix: Improve suggestion extraction with multiple potential patterns
+      const suggestionMatch = 
+        analysis.match(/(?:tip|styling suggestion|suggestion|chill suggestion|to elevate):\s*(.*?)(?=\n\n|$)/is) || 
+        analysis.match(/(?:tip|styling suggestion|suggestion|chill suggestion|to elevate)\s+(.*?)(?=\n\n|$)/is);
+      
+      const suggestion = suggestionMatch ? suggestionMatch[1].trim() : "";
 
       const result = {
         score,
         styleCore: formattedStyleCore,
-        strengths,
-        suggestion: suggestionText
+        strengths: strengths.filter(s => s), // Filter out any empty strings
+        suggestion
       };
 
       console.log("Processed analysis result:", result);
