@@ -5,29 +5,32 @@ import React, { useEffect } from "react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiresSubscription?: boolean; // New prop to determine if the route requires a subscription
+  requiresSubscription?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  requiresSubscription = true // By default, routes require subscription
+  requiresSubscription = true
 }) => {
   const { user, hasActiveSubscription, checkSubscriptionStatus } = useAuth();
   const location = useLocation();
+  const isDevelopment = import.meta.env.DEV; // Vite's built-in development flag
 
   useEffect(() => {
-    // Refresh subscription status when navigating to protected routes
     if (user) {
       checkSubscriptionStatus();
     }
   }, [user, checkSubscriptionStatus, location.pathname]);
 
+  // Allow access in development mode
+  if (isDevelopment) {
+    return <>{children}</>;
+  }
+
   if (!user) {
-    // User is not logged in, redirect to login
     return <Navigate to={`/login?next=${location.pathname}`} state={{ from: location }} replace />;
   }
   
-  // If route requires subscription and user doesn't have an active one, redirect to pricing
   if (requiresSubscription && !hasActiveSubscription) {
     return <Navigate to="/pricing" state={{ from: location }} replace />;
   }
