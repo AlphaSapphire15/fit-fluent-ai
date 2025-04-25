@@ -146,7 +146,7 @@ export const useImageAnalysis = () => {
         analysis.match(/score:?\s*(\d+)/i) ||
         analysis.match(/style score:?\s*(\d+)/i);
         
-      const score = scoreMatch ? parseInt(scoreMatch[1]) : 85; // Default to 85 if no score found
+      const score = scoreMatch ? parseInt(scoreMatch[1]) : 70; // Default to 70 if no score found
       
       // Extract the style core
       const styleTextMatch = 
@@ -185,7 +185,18 @@ export const useImageAnalysis = () => {
         analysis.match(/tip to elevate:?\s*(.*?)(?=\n\n|$)/is) || 
         analysis.match(/suggestion:?\s*(.*?)(?=\n\n|$)/is);
       
-      const suggestion = suggestionMatch ? suggestionMatch[1].trim() : "Try adding a statement accessory to elevate your look.";
+      // Provide a default suggestion if none found, to ensure Tips to Elevate always appears
+      let suggestion = "Try adding a statement accessory to elevate your look.";
+      
+      if (suggestionMatch && suggestionMatch[1]) {
+        suggestion = suggestionMatch[1].trim();
+      } else {
+        // Deeper search - look for any sentence after the phrase "tip" or "elevate"
+        const tipSentenceMatch = analysis.match(/tip|elevate.*?([\w\s,\.'":\-]+)(?=\n|$)/i);
+        if (tipSentenceMatch && tipSentenceMatch[1]) {
+          suggestion = tipSentenceMatch[1].trim();
+        }
+      }
 
       const result = {
         score,

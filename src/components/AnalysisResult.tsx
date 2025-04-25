@@ -41,17 +41,14 @@ const AnalysisResult = ({ score, styleCore, strengths, suggestion }: AnalysisRes
           </ul>
         </div>
 
-        {/* Tips to Elevate */}
+        {/* Tips to Elevate - Always show this section */}
         <div>
           <h3 className="font-satoshi font-bold text-lg mb-4">Tip to Elevate</h3>
           <ul className="space-y-3">
             <li className="flex items-start gap-2">
               <Sparkles size={18} className="text-lilac shrink-0 mt-0.5" />
               <span>
-                {(suggestion || "Try adding a statement accessory to elevate your look.")
-                  .replace(/^\*\*(\s|$)/, '') // Remove leading ** and optional space
-                  .replace(/^Tip to Elevate:?\s*/i, '') // Remove "Tip to Elevate:" prefix if present
-                }
+                {suggestion || "Try adding a statement accessory to elevate your look."}
               </span>
             </li>
           </ul>
