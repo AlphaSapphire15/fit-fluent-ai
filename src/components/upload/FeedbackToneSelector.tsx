@@ -24,12 +24,22 @@ const FeedbackToneSelector: React.FC<FeedbackToneSelectorProps> = ({ tone, setTo
           {toneOptions.map((option) => (
             <div key={option.value} className="w-full">
               <Button
-                variant={tone === option.value ? "default" : "outline"}
-                className="w-full flex flex-col items-start h-auto p-4 space-y-2"
+                variant="gradient"
+                className={`w-full h-auto p-6 rounded-xl transition-all duration-300
+                  ${tone === option.value 
+                    ? 'shadow-[0_0_25px_rgba(167,139,250,0.6)] scale-[1.02]' 
+                    : 'hover:shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:scale-105'
+                  }`}
                 onClick={() => setTone(option.value)}
               >
-                <span className="font-medium text-lg">{option.label}</span>
-                <span className="text-muted-foreground text-sm">{option.description}</span>
+                <div className="flex flex-col items-center space-y-2 w-full">
+                  <span className="font-medium text-lg text-white">
+                    {option.label}
+                  </span>
+                  <span className="text-white/90 text-sm font-light">
+                    {option.description}
+                  </span>
+                </div>
               </Button>
             </div>
           ))}
