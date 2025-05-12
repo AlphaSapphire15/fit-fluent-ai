@@ -14,11 +14,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // Pages
 import Landing from "./pages/Landing";
 import Upload from "./pages/Upload";
-import Loading from "./pages/Loading";
-import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
+import InitiateCheckout from "./pages/InitiateCheckout";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +35,6 @@ const App = () => (
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/pricing" element={<Pricing />} />
 
               {/* Protected Routes */}
               <Route 
@@ -44,6 +42,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route 
+                path="/pricing" 
+                element={
+                  <ProtectedRoute>
+                    <Pricing />
                   </ProtectedRoute>
                 }
               />
@@ -56,18 +62,10 @@ const App = () => (
                 }
               />
               <Route 
-                path="/loading" 
+                path="/checkout" 
                 element={
                   <ProtectedRoute>
-                    <Loading />
-                  </ProtectedRoute>
-                }
-              />
-              <Route 
-                path="/results" 
-                element={
-                  <ProtectedRoute>
-                    <Results />
+                    <InitiateCheckout />
                   </ProtectedRoute>
                 }
               />

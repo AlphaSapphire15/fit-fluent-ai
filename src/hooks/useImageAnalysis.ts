@@ -15,6 +15,30 @@ export const useImageAnalysis = () => {
     setIsAnalyzing(true);
 
     try {
+      console.log("Checking if user has available credits");
+      
+      // Check if user has available credits
+      const { data: hasCredits, error: creditsError } = await supabase.rpc('has_available_credits', {
+        user_uuid: (await supabase.auth.getUser()).data.user?.id
+      });
+      
+      if (creditsError) {
+        console.error('Error checking credits:', creditsError);
+        throw new Error('Failed to check available credits');
+      }
+      
+      if (!hasCredits) {
+        console.log('User has no available credits');
+        toast({
+          title: "No Credits Available",
+          description: "Please purchase a plan to analyze your outfit.",
+          variant: "destructive",
+        });
+        throw new Error('No available credits');
+      }
+
+      console.log("User has credits, proceeding with analysis");
+      
       console.log("Calling analyze-outfit function with image data and tone:", tone);
       
       const imageUrl = await prepareImageForAnalysis(inputBase64OrFile);
@@ -43,6 +67,17 @@ export const useImageAnalysis = () => {
       };
 
       console.log("Processed analysis result:", result);
+      
+      // Use a credit for this analysis
+      const { error: useCreditsError } = await supabase.rpc('use_analysis_credit', {
+        user_uuid: (await supabase.auth.getUser()).data.user?.id
+      });
+      
+      if (useCreditsError) {
+        console.error('Error using credit:', useCreditsError);
+        // Continue anyway since the analysis was successful
+      }
+      
       setAnalysisResult(result);
     } catch (err) {
       console.error('Analysis error:', err);

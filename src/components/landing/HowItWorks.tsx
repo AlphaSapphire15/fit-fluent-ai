@@ -38,7 +38,7 @@ export const HowItWorks = () => {
     if (!user) {
       navigate('/signup');
     } else {
-      navigate('/upload');
+      navigate('/pricing');
     }
   };
 

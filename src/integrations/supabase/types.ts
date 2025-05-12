@@ -99,13 +99,46 @@ export type Database = {
         }
         Relationships: []
       }
+      user_credits: {
+        Row: {
+          credits: number
+          id: string
+          last_updated: string | null
+          user_id: string
+        }
+        Insert: {
+          credits?: number
+          id?: string
+          last_updated?: string | null
+          user_id: string
+        }
+        Update: {
+          credits?: number
+          id?: string
+          last_updated?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      add_user_credits: {
+        Args: { user_uuid: string; amount: number }
+        Returns: undefined
+      }
+      has_available_credits: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      use_analysis_credit: {
+        Args: { user_uuid: string }
         Returns: boolean
       }
     }

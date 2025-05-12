@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Menu, Home, Upload, User } from "lucide-react";
+import { Menu, Home, Upload, User, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,8 +14,11 @@ export const NavigationMenu = () => {
 
   const menuItems = [
     { label: "Home", path: "/", icon: Home },
-    { label: "Upload", path: "/upload", icon: Upload },
-    { label: "Profile", path: "/profile", icon: User },
+    ...(user ? [
+      { label: "Upload", path: "/upload", icon: Upload },
+      { label: "Pricing", path: "/pricing", icon: CreditCard },
+      { label: "Profile", path: "/profile", icon: User }
+    ] : []),
     { label: user ? "Sign Out" : "Sign Up", path: user ? "/login" : "/signup" },
   ];
 

@@ -65,6 +65,32 @@ serve(async (req) => {
     const mode = priceId === oneTimePrice ? "payment" : "subscription";
     logStep("Checkout mode determined", { mode });
     
+    // Extract auth header to identify the user
+    const authHeader = req.headers.get("Authorization");
+    let userId = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      try {
+        // Call Supabase API to validate the token and get user ID
+        const authResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/auth/v1/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            apikey: Deno.env.get("SUPABASE_ANON_KEY") || "",
+          },
+        });
+        
+        if (authResponse.ok) {
+          const userData = await authResponse.json();
+          userId = userData.id;
+          logStep("User identified", { userId });
+        }
+      } catch (error) {
+        logStep("Failed to identify user", { error: error.message });
+        // Continue without user ID
+      }
+    }
+    
     // Create a checkout session
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -76,12 +102,49 @@ serve(async (req) => {
       mode: mode,
       success_url: `${req.headers.get("origin")}/upload?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/#pricing`,
+      client_reference_id: userId, // Include user ID if available for identification
+      metadata: {
+        userId: userId || "anonymous",
+        planType: priceId === oneTimePrice ? "one-time" : "subscription"
+      }
     });
 
     logStep("Checkout session created", { 
       sessionId: session.id, 
       url: session.url 
     });
+
+    // For one-time purchases, add credits immediately if possible
+    if (mode === "payment" && userId) {
+      try {
+        // Call the PostgreSQL function to add credits
+        const creditsResponse = await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/rest/v1/rpc/add_user_credits`, 
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              'apikey': Deno.env.get("SUPABASE_ANON_KEY") || "",
+            },
+            body: JSON.stringify({
+              user_uuid: userId,
+              amount: 1 // One credit for one-time purchase
+            })
+          }
+        );
+        
+        if (!creditsResponse.ok) {
+          const errorData = await creditsResponse.json();
+          logStep("Failed to add credits", errorData);
+        } else {
+          logStep("Added credits for one-time purchase", { userId, credits: 1 });
+        }
+      } catch (error) {
+        logStep("Error adding credits", { error: error.message });
+        // Continue anyway, as the checkout was successful
+      }
+    }
 
     return new Response(
       JSON.stringify({ url: session.url }),
