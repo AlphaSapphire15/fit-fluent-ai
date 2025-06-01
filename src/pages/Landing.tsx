@@ -1,6 +1,7 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, ExternalLink } from "lucide-react";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { ExampleAnalyses } from "@/components/landing/ExampleAnalyses";
@@ -63,8 +64,21 @@ const Landing = () => {
             Follow Us
           </Button>
         </div>
-        <div className="text-center mt-4 text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} DresAI. All rights reserved.
+        
+        <div className="text-center mt-4 space-y-2">
+          <div className="text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} DresAI. All rights reserved.
+          </div>
+          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground/70">
+            <span>Website by</span>
+            <button
+              onClick={() => window.open('https://pixlcreatives.com', '_blank')}
+              className="text-lilac hover:text-lilac/80 transition-colors inline-flex items-center gap-1 hover:underline"
+            >
+              Pixl Creatives
+              <ExternalLink size={12} />
+            </button>
+          </div>
         </div>
       </footer>
     </div>
