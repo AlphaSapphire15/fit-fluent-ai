@@ -50,6 +50,9 @@ export const PricingSection = () => {
         return;
       }
 
+      // For existing users, directly initiate checkout
+      console.log("Existing user selecting plan:", type);
+      
       // Determine which price ID to use
       const priceId = type === "one-time"
         ? import.meta.env.VITE_PRICE_ONE_TIME
@@ -67,17 +70,23 @@ export const PricingSection = () => {
         return;
       }
 
-      // Create checkout session
+      // Create checkout session directly for existing users
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId }
       });
 
       if (error) {
         console.error("Error creating checkout session:", error);
-        throw new Error("Failed to create checkout session");
+        toast({
+          title: "Error",
+          description: "There was a problem creating the checkout session. Please try again.",
+          variant: "destructive",
+        });
+        return;
       }
 
       if (data?.url) {
+        console.log("Redirecting existing user to Stripe Checkout:", data.url);
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {

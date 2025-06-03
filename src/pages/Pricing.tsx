@@ -14,11 +14,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { supabase } from "@/integrations/supabase/client";
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, initiateCheckout } = useAuth();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState<{[key: string]: boolean}>({
     'one-time': false,
     'subscription': false
@@ -34,7 +35,48 @@ const Pricing = () => {
         return;
       }
       
-      await initiateCheckout(type);
+      // For existing users, directly create checkout session
+      console.log("Existing user selecting plan from pricing page:", type);
+      
+      const priceId = type === "one-time"
+        ? import.meta.env.VITE_PRICE_ONE_TIME
+        : import.meta.env.VITE_PRICE_UNLIMITED;
+
+      console.log("Selected plan:", type, "with priceId:", priceId);
+
+      if (!priceId) {
+        console.error("Missing price ID in environment variables");
+        toast({
+          title: "Configuration Error",
+          description: "Missing price information. Please contact support.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId }
+      });
+
+      if (error) {
+        console.error("Error creating checkout session:", error);
+        toast({
+          title: "Error",
+          description: "There was a problem creating the checkout session. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.url) {
+        console.log("Redirecting to Stripe Checkout:", data.url);
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+      
     } catch (error) {
       console.error("Error selecting plan:", error);
       toast({
@@ -42,6 +84,7 @@ const Pricing = () => {
         description: "There was a problem selecting the plan. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(prev => ({ ...prev, [type]: false }));
     }
   };
