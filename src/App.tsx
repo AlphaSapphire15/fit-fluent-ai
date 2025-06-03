@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,7 +35,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
 
-              {/* Protected Routes */}
+              {/* Protected Routes - No Credit Requirement */}
               <Route 
                 path="/profile" 
                 element={
@@ -54,18 +53,20 @@ const App = () => (
                 }
               />
               <Route 
-                path="/upload" 
-                element={
-                  <ProtectedRoute>
-                    <Upload />
-                  </ProtectedRoute>
-                }
-              />
-              <Route 
                 path="/checkout" 
                 element={
                   <ProtectedRoute>
                     <InitiateCheckout />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Protected Routes - Requires Credits/Subscription */}
+              <Route 
+                path="/upload" 
+                element={
+                  <ProtectedRoute requiresCredits={true}>
+                    <Upload />
                   </ProtectedRoute>
                 }
               />

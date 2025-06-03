@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -9,6 +8,7 @@ import AnalysisResult from "@/components/AnalysisResult";
 import DragAndDrop from "@/components/upload/DragAndDrop";
 import FeedbackToneSelector from "@/components/upload/FeedbackToneSelector";
 import { useImageAnalysis } from "@/hooks/useImageAnalysis";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Dialog,
@@ -18,7 +18,6 @@ import {
   DialogHeader,
   DialogFooter
 } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
 
 const Upload = () => {
   const { user } = useAuth();
@@ -29,13 +28,12 @@ const Upload = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const { isAnalyzing, analysisResult, analyzeImage, setAnalysisResult } = useImageAnalysis();
+  const { hasAccess, useCredit, getDisplayText, refreshPlanStatus, loading: planLoading } = useUserPlan();
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasCredits, setHasCredits] = useState<boolean | null>(null);
-  const [isLoadingCredits, setIsLoadingCredits] = useState(true);
 
   useEffect(() => {
     // If user is not logged in, redirect to login
@@ -44,37 +42,16 @@ const Upload = () => {
       return;
     }
 
-    // If we have a session_id in the URL, show a welcome toast and add credits
+    // If we have a session_id in the URL, show a welcome toast and refresh plan status
     if (sessionId) {
       toast({
         title: "Payment Successful!",
         description: "Your payment was successful. You can now analyze your outfit."
       });
+      // Refresh plan status after payment
+      refreshPlanStatus();
     }
-
-    // Check if user has credits
-    const checkCredits = async () => {
-      try {
-        setIsLoadingCredits(true);
-        const { data, error } = await supabase.rpc('has_available_credits', {
-          user_uuid: user.id
-        });
-        
-        if (error) {
-          console.error('Error checking credits:', error);
-          return;
-        }
-        
-        setHasCredits(data);
-      } catch (err) {
-        console.error('Failed to check credits:', err);
-      } finally {
-        setIsLoadingCredits(false);
-      }
-    };
-    
-    checkCredits();
-  }, [user, navigate, sessionId, toast]);
+  }, [user, navigate, sessionId, toast, refreshPlanStatus]);
 
   const resetState = () => {
     setPreview(null);
@@ -123,8 +100,8 @@ const Upload = () => {
       return;
     }
     
-    // Check if user has credits before proceeding
-    if (hasCredits === false) {
+    // Check if user has access before proceeding
+    if (!hasAccess()) {
       setDialogMessage("You need to purchase a plan to analyze outfits.");
       setShowDialog(true);
       return;
@@ -132,34 +109,40 @@ const Upload = () => {
     
     try {
       setIsSubmitting(true);
+      
+      // Use credit first
+      const creditUsed = await useCredit();
+      if (!creditUsed) {
+        setDialogMessage("Unable to use credit. Please try again or contact support.");
+        setShowDialog(true);
+        return;
+      }
+      
+      // Proceed with analysis
       await analyzeImage(currentFile, tone);
       
-      // After successful analysis, recheck credits status
-      const { data, error } = await supabase.rpc('has_available_credits', {
-        user_uuid: user?.id
+      toast({
+        title: "Analysis Complete!",
+        description: "Your outfit has been analyzed successfully."
       });
       
-      if (!error) {
-        setHasCredits(data);
-      }
     } catch (error) {
-      if (error instanceof Error && error.message === 'No available credits') {
-        setHasCredits(false);
-      } else {
-        setDialogMessage("Unable to analyze this image. Please try with a different photo.");
-        setShowDialog(true);
-        setPreview(null);
-      }
+      console.error("Analysis error:", error);
+      setDialogMessage("Unable to analyze this image. Please try with a different photo.");
+      setShowDialog(true);
+      setPreview(null);
+      // Refresh plan status in case there was an error
+      refreshPlanStatus();
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoadingCredits) {
+  if (planLoading) {
     return (
       <PageContainer>
         <div className="flex justify-center items-center h-64">
-          <p>Checking your account...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-neonBlue"></div>
         </div>
       </PageContainer>
     );
@@ -170,11 +153,16 @@ const Upload = () => {
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-satoshi font-bold mb-2">Upload Your Fit</h1>
         <p className="text-muted-foreground">Let's see what you're wearing today</p>
+        
+        {/* Display plan status */}
+        <div className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg inline-block">
+          <span className="text-sm font-medium">{getDisplayText()}</span>
+        </div>
       </div>
 
       {!analysisResult ? (
         <div className="max-w-2xl mx-auto">
-          {hasCredits === false && !analysisResult ? (
+          {!hasAccess() && !analysisResult ? (
             <div className="text-center space-y-6 p-8 glass-card rounded-xl">
               <h2 className="text-xl font-semibold">No Credits Available</h2>
               <p className="text-muted-foreground">
@@ -203,29 +191,22 @@ const Upload = () => {
           )}
         </div>
       ) : (
-        <div className="space-y-6 max-w-2xl mx-auto">
-          <DragAndDrop
-            preview={preview}
-            isAnalyzing={isAnalyzing || isSubmitting}
-            onFileChange={handleFile}
-            openFileInput={openFileInput}
-            onAnalyze={handleAnalyze}
-            score={analysisResult.score}
-          />
+        <div className="space-y-6">
           <AnalysisResult {...analysisResult} />
-          <div className="flex justify-center mt-6 gap-4">
+          <div className="flex gap-4 justify-center">
             <Button
               onClick={resetState}
-              className="bg-neonBlue hover:bg-neonBlue/90 text-white py-2 px-6 h-auto text-base rounded-full max-w-xs"
+              className="bg-lilac hover:bg-lilac/90 text-white py-6 h-auto text-lg rounded-full"
             >
               Upload Another Fit
             </Button>
-            {hasCredits === false && (
+            {!hasAccess() && (
               <Button
                 onClick={handlePurchase}
-                className="bg-gradient-to-r from-lilac to-neonBlue text-white py-2 px-6 h-auto text-base rounded-full max-w-xs"
+                variant="outline"
+                className="py-6 h-auto text-lg rounded-full border-neonBlue text-neonBlue hover:bg-neonBlue hover:text-white"
               >
-                Purchase More Credits
+                Get More Credits
               </Button>
             )}
           </div>
@@ -235,24 +216,13 @@ const Upload = () => {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {dialogMessage.includes("need to purchase") ? "Purchase Required" : "Image Analysis Error"}
-            </DialogTitle>
-            <DialogDescription>
-              {dialogMessage}
-            </DialogDescription>
+            <DialogTitle>Image Analysis Error</DialogTitle>
           </DialogHeader>
-          <DialogFooter className="flex justify-end gap-2">
-            {dialogMessage.includes("need to purchase") ? (
-              <>
-                <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-                <Button onClick={() => { setShowDialog(false); navigate('/pricing'); }}>
-                  View Plans
-                </Button>
-              </>
-            ) : (
-              <Button onClick={() => setShowDialog(false)}>OK</Button>
-            )}
+          <DialogDescription>
+            {dialogMessage || "Error analyzing your image. Please try a JPG/PNG."}
+          </DialogDescription>
+          <DialogFooter>
+            <Button onClick={() => setShowDialog(false)}>OK</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
