@@ -137,12 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (email: string, password: string) => {
+    // Don't set emailRedirectTo since email confirmation is disabled
     const { error, data } = await supabase.auth.signUp({
       email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/login`
-      }
+      password
     });
 
     if (error) throw error;
@@ -150,15 +148,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Mark this as a new signup so we can redirect to pricing page
     setIsNewSignup(true);
 
-    if (data?.user && !data?.session) {
+    // When email confirmation is disabled, the user should be automatically signed in
+    if (data?.user && data?.session) {
+      toast({
+        title: "Success!",
+        description: "Your account has been created and you're now logged in.",
+      });
+    } else if (data?.user && !data?.session) {
+      // This shouldn't happen if email confirmation is disabled, but just in case
       toast({
         title: "Account created!",
         description: "Check your email to confirm your account.",
-      });
-    } else if (data?.session) {
-      toast({
-        title: "Success!",
-        description: "Your account has been created.",
       });
     }
     

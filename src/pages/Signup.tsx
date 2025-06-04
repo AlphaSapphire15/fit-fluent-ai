@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
-  const { login, signup } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const nextPath = searchParams.get("next") || "/upload";
