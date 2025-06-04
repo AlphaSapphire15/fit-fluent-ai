@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -24,6 +25,7 @@ const Upload = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const paymentSuccess = searchParams.get("payment_success");
   const { tone, setTone } = useStyle();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -34,6 +36,7 @@ const Upload = () => {
   const [dialogMessage, setDialogMessage] = useState("");
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRefreshingPlan, setIsRefreshingPlan] = useState(false);
 
   useEffect(() => {
     // If user is not logged in, redirect to login
@@ -42,16 +45,51 @@ const Upload = () => {
       return;
     }
 
-    // If we have a session_id in the URL, show a welcome toast and refresh plan status
-    if (sessionId) {
+    // Handle payment success
+    if (sessionId && paymentSuccess) {
+      console.log("Payment successful, refreshing plan status");
+      setIsRefreshingPlan(true);
+      
+      // Show success message
       toast({
         title: "Payment Successful!",
-        description: "Your payment was successful. You can now analyze your outfit."
+        description: "Your payment was successful. Refreshing your plan status..."
       });
-      // Refresh plan status after payment
-      refreshPlanStatus();
+      
+      // Refresh plan status after payment with retry logic
+      const refreshWithRetry = async (attempts = 0) => {
+        try {
+          await refreshPlanStatus();
+          setIsRefreshingPlan(false);
+          
+          // Clear URL parameters after successful refresh
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, '', newUrl);
+          
+          toast({
+            title: "Plan Updated!",
+            description: "You can now analyze your outfit."
+          });
+        } catch (error) {
+          console.error("Error refreshing plan:", error);
+          if (attempts < 3) {
+            // Retry after a delay
+            setTimeout(() => refreshWithRetry(attempts + 1), 2000);
+          } else {
+            setIsRefreshingPlan(false);
+            toast({
+              title: "Plan refresh failed",
+              description: "Please refresh the page or contact support if the issue persists.",
+              variant: "destructive"
+            });
+          }
+        }
+      };
+      
+      // Delay initial refresh to allow webhook processing
+      setTimeout(() => refreshWithRetry(), 1000);
     }
-  }, [user, navigate, sessionId, toast, refreshPlanStatus]);
+  }, [user, navigate, sessionId, paymentSuccess, toast, refreshPlanStatus]);
 
   const resetState = () => {
     setPreview(null);
@@ -138,11 +176,16 @@ const Upload = () => {
     }
   };
 
-  if (planLoading) {
+  if (planLoading || isRefreshingPlan) {
     return (
       <PageContainer>
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-neonBlue"></div>
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-neonBlue mx-auto"></div>
+            <p className="text-muted-foreground">
+              {isRefreshingPlan ? "Processing your payment..." : "Loading..."}
+            </p>
+          </div>
         </div>
       </PageContainer>
     );

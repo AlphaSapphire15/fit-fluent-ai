@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
@@ -76,15 +77,49 @@ serve(async (req) => {
           // One-time payment - add 1 credit
           logStep("Adding credits for one-time payment", { userId });
           
-          const { error } = await supabase.rpc('add_user_credits', {
-            p_user_id: userId,
-            p_credits: 1
-          });
+          // First, check if user_credits record exists
+          const { data: existingCredits, error: fetchError } = await supabase
+            .from('user_credits')
+            .select('credits')
+            .eq('user_id', userId)
+            .single();
 
-          if (error) {
-            logStep("ERROR: Failed to add credits", { error: error.message });
+          if (fetchError && fetchError.code !== 'PGRST116') {
+            logStep("ERROR: Failed to fetch existing credits", { error: fetchError.message });
+            break;
+          }
+
+          if (existingCredits) {
+            // Update existing record
+            const { error: updateError } = await supabase
+              .from('user_credits')
+              .update({ 
+                credits: existingCredits.credits + 1,
+                updated_at: new Date().toISOString()
+              })
+              .eq('user_id', userId);
+
+            if (updateError) {
+              logStep("ERROR: Failed to update credits", { error: updateError.message });
+            } else {
+              logStep("Successfully updated credits", { userId, newTotal: existingCredits.credits + 1 });
+            }
           } else {
-            logStep("Successfully added 1 credit", { userId });
+            // Create new record
+            const { error: insertError } = await supabase
+              .from('user_credits')
+              .insert({
+                user_id: userId,
+                credits: 1,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+
+            if (insertError) {
+              logStep("ERROR: Failed to insert credits", { error: insertError.message });
+            } else {
+              logStep("Successfully created credits record", { userId, credits: 1 });
+            }
           }
         }
         break;
@@ -171,4 +206,4 @@ serve(async (req) => {
       }
     );
   }
-}); 
+});
