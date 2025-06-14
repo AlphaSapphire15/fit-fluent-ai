@@ -65,7 +65,7 @@ export const useUserPlan = () => {
         planType = 'free_trial'; // User hasn't used their free trial yet
       }
 
-      console.log("Final plan status:", { planType, hasUsedFreeTrial, hasCredits });
+      console.log("Final plan status:", { planType, hasUsedFreeTrial, hasCredits, creditsCount: creditsData?.credits });
 
       setPlanStatus({
         planType,
@@ -92,9 +92,12 @@ export const useUserPlan = () => {
     try {
       console.log("Attempting to use analysis, current status:", planStatus);
       
-      // Check if user has access
+      // Refresh plan status first to get latest info
+      await fetchPlanStatus();
+      
+      // Check if user has access after refresh
       if (!hasAccess()) {
-        console.log("No access available");
+        console.log("No access available after refresh");
         return false;
       }
 

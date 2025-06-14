@@ -73,9 +73,21 @@ serve(async (req) => {
           break;
         }
 
-        // For subscription mode, subscription events will handle the activation
+        // For subscription mode, add credits immediately
         if (session.mode === "subscription") {
-          logStep("Subscription checkout completed - will be handled by subscription events");
+          logStep("Adding credits for new subscription", { userId });
+          
+          // Add 100 credits for unlimited plan (adjust as needed)
+          const { error: creditsError } = await supabase.rpc('add_user_credits', {
+            user_uuid: userId,
+            amount: 100
+          });
+
+          if (creditsError) {
+            logStep("ERROR: Failed to add credits", { error: creditsError.message });
+          } else {
+            logStep("Successfully added credits for new subscription", { userId });
+          }
         }
         break;
       }
@@ -112,18 +124,16 @@ serve(async (req) => {
           }
 
           if (userId) {
-            const { error } = await supabase.rpc('update_subscription_status', {
-              p_user_id: userId,
-              p_stripe_subscription_id: subscription.id,
-              p_status: subscription.status,
-              p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
+            // Add credits for recurring payment
+            const { error: creditsError } = await supabase.rpc('add_user_credits', {
+              user_uuid: userId,
+              amount: 100 // Add 100 credits per month
             });
 
-            if (error) {
-              logStep("ERROR: Failed to update subscription", { error: error.message });
+            if (creditsError) {
+              logStep("ERROR: Failed to add credits for payment", { error: creditsError.message });
             } else {
-              logStep("Successfully updated subscription", { userId, status: subscription.status });
+              logStep("Successfully added credits for payment", { userId });
             }
           } else {
             logStep("ERROR: Could not find user_id for subscription", { 
@@ -167,18 +177,18 @@ serve(async (req) => {
         }
 
         if (userId) {
-          const { error } = await supabase.rpc('update_subscription_status', {
-            p_user_id: userId,
-            p_stripe_subscription_id: subscription.id,
-            p_status: subscription.status,
-            p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
-          });
+          // If subscription is cancelled or ended, set credits to 0
+          if (subscription.status === 'canceled' || subscription.status === 'incomplete_expired') {
+            const { error: updateError } = await supabase
+              .from('user_credits')
+              .update({ credits: 0, last_updated: new Date().toISOString() })
+              .eq('user_id', userId);
 
-          if (error) {
-            logStep("ERROR: Failed to update subscription status", { error: error.message });
-          } else {
-            logStep("Successfully updated subscription status", { userId, status: subscription.status });
+            if (updateError) {
+              logStep("ERROR: Failed to remove credits", { error: updateError.message });
+            } else {
+              logStep("Successfully removed credits for cancelled subscription", { userId });
+            }
           }
         } else {
           logStep("ERROR: Could not find user_id for subscription update", { 

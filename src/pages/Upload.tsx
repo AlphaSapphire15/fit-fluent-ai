@@ -62,21 +62,29 @@ const Upload = () => {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
       
-      // Refresh plan status after payment with retry logic
+      // Refresh plan status after payment with multiple retries and longer delays
       const refreshWithRetry = async (attempts = 0) => {
         try {
+          console.log(`Refreshing plan status, attempt ${attempts + 1}`);
           await refreshPlanStatus();
-          setIsRefreshingPlan(false);
           
-          toast({
-            title: "Plan Updated!",
-            description: "You now have unlimited access to analyze your outfits."
-          });
+          // Wait a bit and check if the plan was actually updated
+          setTimeout(async () => {
+            await refreshPlanStatus();
+            setIsRefreshingPlan(false);
+            
+            toast({
+              title: "Plan Updated!",
+              description: "You now have unlimited access to analyze your outfits."
+            });
+          }, 1000);
+          
         } catch (error) {
           console.error("Error refreshing plan:", error);
-          if (attempts < 3) {
-            // Retry after a delay
-            setTimeout(() => refreshWithRetry(attempts + 1), 2000);
+          if (attempts < 5) {
+            // Retry with increasing delays
+            const delay = (attempts + 1) * 3000; // 3s, 6s, 9s, 12s, 15s
+            setTimeout(() => refreshWithRetry(attempts + 1), delay);
           } else {
             setIsRefreshingPlan(false);
             toast({
@@ -88,10 +96,22 @@ const Upload = () => {
         }
       };
       
-      // Delay initial refresh to allow webhook processing
-      setTimeout(() => refreshWithRetry(), 1000);
+      // Delay initial refresh to allow webhook processing (longer delay)
+      setTimeout(() => refreshWithRetry(), 3000);
     }
   }, [user, navigate, sessionId, paymentSuccess, toast, refreshPlanStatus]);
+
+  // Auto-refresh plan status every 30 seconds if on upload page
+  useEffect(() => {
+    if (!user) return;
+    
+    const interval = setInterval(() => {
+      console.log("Auto-refreshing plan status");
+      refreshPlanStatus();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [user, refreshPlanStatus]);
 
   const resetState = () => {
     setPreview(null);
@@ -140,7 +160,10 @@ const Upload = () => {
       return;
     }
     
-    // Check if user has access before proceeding
+    // Refresh plan status before checking access
+    await refreshPlanStatus();
+    
+    // Check if user has access after refreshing
     if (!hasAccess()) {
       setDialogMessage("You need to purchase the unlimited plan to analyze more outfits.");
       setShowDialog(true);
@@ -181,7 +204,7 @@ const Upload = () => {
   if (planLoading || isRefreshingPlan) {
     return (
       <LoadingScreen 
-        message={isRefreshingPlan ? "Processing your payment..." : "Loading..."}
+        message={isRefreshingPlan ? "Processing your payment and updating your plan..." : "Loading..."}
       />
     );
   }
@@ -204,6 +227,18 @@ const Upload = () => {
   return (
     <PageContainer showBackButton>
       <UploadHeader planStatus={statusDisplay} />
+
+      {/* Add manual refresh button for debugging */}
+      <div className="text-center mb-4">
+        <Button 
+          onClick={refreshPlanStatus} 
+          variant="outline" 
+          size="sm"
+          className="text-xs"
+        >
+          Refresh Plan Status
+        </Button>
+      </div>
 
       {!analysisResult ? (
         <div className="max-w-2xl mx-auto">
