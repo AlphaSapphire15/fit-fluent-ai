@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -61,11 +62,11 @@ const App = () => (
                 }
               />
 
-              {/* Protected Routes - Requires Credits/Subscription */}
+              {/* Upload Route - Remove credit requirement for now to test */}
               <Route 
                 path="/upload" 
                 element={
-                  <ProtectedRoute requiresCredits={true}>
+                  <ProtectedRoute>
                     <Upload />
                   </ProtectedRoute>
                 }

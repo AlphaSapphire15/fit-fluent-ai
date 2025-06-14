@@ -1,6 +1,6 @@
+
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserPlan } from "@/hooks/useUserPlan";
 import React from "react";
 
 interface ProtectedRouteProps {
@@ -13,7 +13,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiresCredits = false 
 }) => {
   const { user } = useAuth();
-  const { hasAccess, loading } = useUserPlan();
   const location = useLocation();
 
   // If user is not authenticated, send to login
@@ -21,20 +20,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={`/login?next=${location.pathname}`} state={{ from: location }} replace />;
   }
 
-  // Show loading while checking plan status
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-neonBlue"></div>
-      </div>
-    );
-  }
-
-  // If route requires credits and user doesn't have access, redirect to pricing
-  if (requiresCredits && !hasAccess()) {
-    return <Navigate to="/pricing" replace />;
-  }
-
+  // For now, just check authentication - let the individual pages handle credit checks
+  // This prevents the infinite redirect loop
   return <>{children}</>;
 };
 
