@@ -7,6 +7,7 @@ import PageContainer from "@/components/PageContainer";
 import { useImageAnalysis } from "@/hooks/useImageAnalysis";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Dialog,
   DialogContent, 
