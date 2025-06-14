@@ -1,3 +1,4 @@
+
 /// <reference types="vite/client" />
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -25,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const [isNewSignup, setIsNewSignup] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState<string | null>(null);
 
   const initiateCheckout = async (planType: "one-time" | "subscription") => {
     if (isLoadingCheckout) return;
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "There was a problem initiating checkout. Please try again or contact support.",
         variant: "destructive",
       });
-      throw error; // Re-throw so calling code can handle it
+      throw error;
     } finally {
       setIsLoadingCheckout(false);
     }
@@ -84,24 +85,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_IN') {
-          const urlParams = new URLSearchParams(window.location.search);
-          const nextPath = urlParams.get('next');
-          const plan = urlParams.get('plan') as "one-time" | "subscription" | null;
+        // Only handle redirects for specific events, not all state changes
+        if (event === 'SIGNED_IN' && pendingRedirect) {
+          const redirect = pendingRedirect;
+          setPendingRedirect(null);
           
-          // If isNewSignup is true or coming from signup page with a plan parameter,
-          // direct to pricing
-          if (isNewSignup || (nextPath === 'payment' && plan)) {
-            setIsNewSignup(false);
-            console.log(`Redirecting to pricing after signup`);
-            navigate('/pricing', { replace: true });
-          } else if (nextPath && nextPath !== '/') {
-            // Respect the next parameter if provided
-            navigate(nextPath, { replace: true });
-          } else {
-            // Default redirect to upload page for signed-in users
-            console.log("Signed in, default redirect to upload page");
+          // Handle post-payment success
+          const urlParams = new URLSearchParams(window.location.search);
+          const sessionId = urlParams.get('session_id');
+          const paymentSuccess = urlParams.get('payment_success');
+          
+          if (sessionId && paymentSuccess) {
+            console.log("Post-payment redirect to upload");
             navigate('/upload', { replace: true });
+            return;
+          }
+          
+          // Handle redirects based on the stored pending redirect
+          if (redirect === 'pricing') {
+            navigate('/pricing', { replace: true });
+          } else if (redirect === 'upload') {
+            navigate('/upload', { replace: true });
+          } else if (redirect && redirect !== '/') {
+            navigate(redirect, { replace: true });
+          } else {
+            // Default: don't redirect, let user stay where they are
+            console.log("Signed in, staying on current page");
           }
         } else if (event === 'SIGNED_OUT') {
           navigate('/');
@@ -115,28 +124,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location, isNewSignup]);
+  }, [navigate, pendingRedirect]);
 
   const login = async () => {
+    // Set pending redirect before initiating login
+    const urlParams = new URLSearchParams(window.location.search);
+    const nextPath = urlParams.get('next');
+    setPendingRedirect(nextPath || 'upload');
+    
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/upload`
+        redirectTo: `${window.location.origin}${nextPath || '/upload'}`
       }
     });
   };
 
   const loginWithEmail = async (email: string, password: string) => {
+    // Set pending redirect before login
+    const urlParams = new URLSearchParams(window.location.search);
+    const nextPath = urlParams.get('next');
+    setPendingRedirect(nextPath || 'upload');
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
     if (error) throw error;
-    // Navigation is handled by onAuthStateChange
   };
 
   const signup = async (email: string, password: string) => {
-    // Don't set emailRedirectTo since email confirmation is disabled
+    // For new signups, always redirect to pricing
+    setPendingRedirect('pricing');
+
     const { error, data } = await supabase.auth.signUp({
       email,
       password
@@ -144,24 +164,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) throw error;
 
-    // Mark this as a new signup so we can redirect to pricing page
-    setIsNewSignup(true);
-
-    // When email confirmation is disabled, the user should be automatically signed in
     if (data?.user && data?.session) {
       toast({
         title: "Success!",
         description: "Your account has been created and you're now logged in.",
       });
     } else if (data?.user && !data?.session) {
-      // This shouldn't happen if email confirmation is disabled, but just in case
       toast({
         title: "Account created!",
         description: "Check your email to confirm your account.",
       });
     }
-    
-    // Navigation is handled by onAuthStateChange
   };
 
   const logout = async () => {

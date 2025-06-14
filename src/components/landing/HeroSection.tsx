@@ -1,34 +1,28 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserPlan } from "@/hooks/useUserPlan";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { user } = useAuth();
-  const { hasAccess, loading } = useUserPlan();
 
   const handleUpload = () => {
     if (!user) {
       // Not logged in - go to signup
       navigate('/signup');
-    } else if (hasAccess()) {
-      // Logged in and has access - go directly to upload
-      navigate('/upload');
     } else {
-      // Logged in but no access - go to pricing
-      navigate('/pricing');
+      // Logged in - go to upload page (it will handle credit checks internally)
+      navigate('/upload');
     }
   };
 
   const getButtonText = () => {
     if (!user) return "Sign Up to Analyze";
-    if (loading) return "Checking...";
-    if (hasAccess()) return "Analyze Your Outfit";
-    return "Get Started";
+    return "Analyze Your Outfit";
   };
 
   return (
@@ -47,7 +41,6 @@ export const HeroSection = () => {
         variant="gradient"
         size={isMobile ? "lg" : "xl"}
         className="rounded-full font-medium shadow-[0_0_15px_rgba(167,139,250,0.4)] hover:shadow-[0_0_25px_rgba(167,139,250,0.6)] w-full max-w-xs md:max-w-md mb-12"
-        disabled={loading}
       >
         <Camera className="mr-2 w-5 h-5" />
         {getButtonText()}

@@ -39,7 +39,7 @@ const Upload = () => {
   const [isRefreshingPlan, setIsRefreshingPlan] = useState(false);
 
   useEffect(() => {
-    // If user is not logged in, redirect to login
+    // If user is not logged in, redirect to login with return path
     if (!user) {
       navigate("/login?next=/upload");
       return;
@@ -56,15 +56,15 @@ const Upload = () => {
         description: "Your payment was successful. Refreshing your plan status..."
       });
       
+      // Clear URL parameters immediately
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      
       // Refresh plan status after payment with retry logic
       const refreshWithRetry = async (attempts = 0) => {
         try {
           await refreshPlanStatus();
           setIsRefreshingPlan(false);
-          
-          // Clear URL parameters after successful refresh
-          const newUrl = window.location.pathname;
-          window.history.replaceState({}, '', newUrl);
           
           toast({
             title: "Plan Updated!",
