@@ -49,7 +49,8 @@ const Upload = () => {
 
     // Handle payment success
     if (sessionId && paymentSuccess) {
-      console.log("Payment successful, refreshing plan status");
+      console.log("=== PAYMENT SUCCESS DETECTED ===");
+      console.log("Session ID:", sessionId);
       setIsRefreshingPlan(true);
       
       // Show success message
@@ -62,28 +63,50 @@ const Upload = () => {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
       
-      // Refresh plan status after payment with multiple retries and longer delays
+      // Enhanced refresh with more aggressive retries
       const refreshWithRetry = async (attempts = 0) => {
         try {
-          console.log(`Refreshing plan status, attempt ${attempts + 1}`);
+          console.log(`=== REFRESH ATTEMPT ${attempts + 1} ===`);
           await refreshPlanStatus();
           
-          // Wait a bit and check if the plan was actually updated
-          setTimeout(async () => {
-            await refreshPlanStatus();
+          // Check if credits were actually updated by querying directly
+          const { data: creditsData } = await supabase
+            .from('user_credits')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          console.log("Credits after refresh attempt:", creditsData);
+          
+          if (creditsData && creditsData.credits > 0) {
+            console.log("Credits found! Plan updated successfully");
             setIsRefreshingPlan(false);
-            
             toast({
               title: "Plan Updated!",
               description: "You now have unlimited access to analyze your outfits."
             });
-          }, 1000);
+            return;
+          }
+          
+          // If no credits found and we haven't hit max attempts, retry
+          if (attempts < 8) {
+            const delay = Math.min((attempts + 1) * 2000, 10000); // 2s, 4s, 6s, 8s, 10s, 10s, 10s, 10s
+            console.log(`No credits found, retrying in ${delay}ms...`);
+            setTimeout(() => refreshWithRetry(attempts + 1), delay);
+          } else {
+            console.log("Max retry attempts reached");
+            setIsRefreshingPlan(false);
+            toast({
+              title: "Plan refresh taking longer than expected",
+              description: "Your payment was successful. Please wait a moment and refresh the page, or contact support if the issue persists.",
+              variant: "default"
+            });
+          }
           
         } catch (error) {
-          console.error("Error refreshing plan:", error);
-          if (attempts < 5) {
-            // Retry with increasing delays
-            const delay = (attempts + 1) * 3000; // 3s, 6s, 9s, 12s, 15s
+          console.error(`Error on refresh attempt ${attempts + 1}:`, error);
+          if (attempts < 8) {
+            const delay = Math.min((attempts + 1) * 2000, 10000);
             setTimeout(() => refreshWithRetry(attempts + 1), delay);
           } else {
             setIsRefreshingPlan(false);
@@ -96,19 +119,22 @@ const Upload = () => {
         }
       };
       
-      // Delay initial refresh to allow webhook processing (longer delay)
-      setTimeout(() => refreshWithRetry(), 3000);
+      // Start refresh immediately, then with delay
+      setTimeout(() => refreshWithRetry(), 1000);
     }
   }, [user, navigate, sessionId, paymentSuccess, toast, refreshPlanStatus]);
 
-  // Auto-refresh plan status every 30 seconds if on upload page
+  // More frequent auto-refresh when user is on upload page
   useEffect(() => {
     if (!user) return;
+    
+    // Immediate refresh on mount
+    refreshPlanStatus();
     
     const interval = setInterval(() => {
       console.log("Auto-refreshing plan status");
       refreshPlanStatus();
-    }, 30000);
+    }, 15000); // Every 15 seconds instead of 30
 
     return () => clearInterval(interval);
   }, [user, refreshPlanStatus]);
@@ -160,28 +186,24 @@ const Upload = () => {
       return;
     }
     
-    // Refresh plan status before checking access
-    await refreshPlanStatus();
-    
-    // Check if user has access after refreshing
-    if (!hasAccess()) {
-      setDialogMessage("You need to purchase the unlimited plan to analyze more outfits.");
-      setShowDialog(true);
-      return;
-    }
+    console.log("=== STARTING ANALYSIS ===");
     
     try {
       setIsSubmitting(true);
       
       // Use analysis credit first
+      console.log("Attempting to use analysis credit...");
       const analysisUsed = await useAnalysis();
+      console.log("Analysis credit used:", analysisUsed);
+      
       if (!analysisUsed) {
-        setDialogMessage("Unable to process analysis. Please try again or contact support.");
+        setDialogMessage("Unable to process analysis. Please try again or contact support if you have an active subscription.");
         setShowDialog(true);
         return;
       }
       
       // Proceed with analysis
+      console.log("Proceeding with image analysis...");
       await analyzeImage(currentFile, tone);
       
       toast({
@@ -228,8 +250,8 @@ const Upload = () => {
     <PageContainer showBackButton>
       <UploadHeader planStatus={statusDisplay} />
 
-      {/* Add manual refresh button for debugging */}
-      <div className="text-center mb-4">
+      {/* Enhanced debugging section */}
+      <div className="text-center mb-4 space-y-2">
         <Button 
           onClick={refreshPlanStatus} 
           variant="outline" 
@@ -238,6 +260,9 @@ const Upload = () => {
         >
           Refresh Plan Status
         </Button>
+        <div className="text-xs text-gray-500">
+          Debug: Plan Type = {planType}, Has Access = {hasAccess().toString()}
+        </div>
       </div>
 
       {!analysisResult ? (
