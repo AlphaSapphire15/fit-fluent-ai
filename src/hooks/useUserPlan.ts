@@ -121,7 +121,7 @@ export const useUserPlan = () => {
       }
 
       // If user has free trial available, record usage in uploads
-      if (planType === 'free_trial') {
+      if (planStatus.planType === 'free_trial') {
         console.log("Using free trial");
         const { error } = await supabase
           .from('uploads')
