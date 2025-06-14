@@ -20,43 +20,25 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState<{[key: string]: boolean}>({
-    'one-time': false,
-    'subscription': false
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handlePlanSelection = async (type: "one-time" | "subscription") => {
+  const handleUnlimitedPlan = async () => {
     try {
-      setIsLoading(prev => ({ ...prev, [type]: true }));
+      setIsLoading(true);
       
-      // If not logged in, redirect to signup with plan selection info
+      // If not logged in, redirect to signup
       if (!user) {
-        navigate(`/signup?next=payment&plan=${type}`);
+        navigate('/signup?next=pricing');
         return;
       }
       
-      // For existing users, directly create checkout session
-      console.log("Existing user selecting plan from pricing page:", type);
-      
-      const priceId = type === "one-time"
-        ? import.meta.env.VITE_PRICE_ONE_TIME
-        : import.meta.env.VITE_PRICE_UNLIMITED;
+      console.log("User selecting unlimited plan");
 
-      console.log("Selected plan:", type, "with priceId:", priceId);
-
-      if (!priceId) {
-        console.error("Missing price ID in environment variables");
-        toast({
-          title: "Configuration Error",
-          description: "Missing price information. Please contact support.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Create checkout session
+      // Create checkout session for unlimited plan
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId }
+        body: { 
+          priceId: 'price_1QT0bABw9zLM1YqNXEu4vR2e' // Monthly unlimited plan price ID
+        }
       });
 
       if (error) {
@@ -71,36 +53,35 @@ const Pricing = () => {
 
       if (data?.url) {
         console.log("Redirecting to Stripe Checkout:", data.url);
-        // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
         throw new Error("No checkout URL returned");
       }
       
     } catch (error) {
-      console.error("Error selecting plan:", error);
+      console.error("Error selecting unlimited plan:", error);
       toast({
         title: "Error",
         description: "There was a problem selecting the plan. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(prev => ({ ...prev, [type]: false }));
+      setIsLoading(false);
     }
   };
 
   const faqs = [
     {
-      question: "How does the analysis work?",
-      answer: "Our AI analyzes your outfit photo and provides detailed style recommendations, color coordination advice, and personalized fashion tips."
+      question: "How does the free trial work?",
+      answer: "Every new user gets one free outfit analysis to try our service. After that, you'll need the unlimited plan for more analyses."
     },
     {
       question: "Can I cancel my subscription?",
       answer: "Yes, you can cancel your unlimited plan subscription anytime with no questions asked."
     },
     {
-      question: "How many outfits can I analyze?",
-      answer: "With the one-time plan, you get one outfit analysis. With the unlimited plan, you can analyze as many outfits as you want during your subscription period."
+      question: "What's included in the unlimited plan?",
+      answer: "With the unlimited plan, you can analyze as many outfits as you want during your subscription period, plus get priority feedback and advanced style recommendations."
     }
   ];
 
@@ -117,12 +98,12 @@ const Pricing = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* One-time Plan Card */}
+          {/* Free Trial Card */}
           <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden">
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
-                <span className="text-xl font-poppins">One-Time Scan</span>
-                <span className="text-2xl font-bold text-lilac">$3</span>
+                <span className="text-xl font-poppins">Free Trial</span>
+                <span className="text-2xl font-bold text-lilac">Free</span>
               </CardTitle>
               <CardDescription>Try it out with a single outfit analysis</CardDescription>
             </CardHeader>
@@ -144,18 +125,17 @@ const Pricing = () => {
             </CardContent>
             <CardFooter className="pt-4">
               <Button
-                onClick={() => handlePlanSelection("one-time")}
-                variant="gradient"
-                className="w-full py-6 h-auto rounded-full"
-                disabled={isLoading['one-time']}
+                onClick={() => navigate('/signup')}
+                variant="outline"
+                className="w-full py-6 h-auto rounded-full border-lilac text-lilac hover:bg-lilac hover:text-white"
                 size="lg"
               >
-                {isLoading['one-time'] ? "Processing..." : "Choose Plan"}
+                Start Free Trial
               </Button>
             </CardFooter>
           </Card>
 
-          {/* Subscription Plan Card */}
+          {/* Unlimited Plan Card */}
           <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden">
             <div className="absolute top-0 right-0 bg-gradient-to-r from-lilac to-neonBlue text-xs px-3 py-1 font-medium text-white">
               BEST VALUE
@@ -196,13 +176,13 @@ const Pricing = () => {
             </CardContent>
             <CardFooter className="pt-4">
               <Button
-                onClick={() => handlePlanSelection("subscription")}
+                onClick={handleUnlimitedPlan}
                 variant="gradient"
                 className="w-full py-6 h-auto rounded-full"
-                disabled={isLoading['subscription']}
+                disabled={isLoading}
                 size="lg"
               >
-                {isLoading['subscription'] ? "Processing..." : "Choose Plan"}
+                {isLoading ? "Processing..." : "Choose Unlimited Plan"}
               </Button>
             </CardFooter>
           </Card>

@@ -51,7 +51,7 @@ serve(async (req) => {
       return new Response("Invalid signature", { status: 400 });
     }
 
-    // Initialize Supabase client
+    // Initialize Supabase client with service role key
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -73,56 +73,8 @@ serve(async (req) => {
           break;
         }
 
-        if (session.mode === "payment") {
-          // One-time payment - add 1 credit
-          logStep("Adding credits for one-time payment", { userId });
-          
-          // First, check if user_credits record exists
-          const { data: existingCredits, error: fetchError } = await supabase
-            .from('user_credits')
-            .select('credits')
-            .eq('user_id', userId)
-            .single();
-
-          if (fetchError && fetchError.code !== 'PGRST116') {
-            logStep("ERROR: Failed to fetch existing credits", { error: fetchError.message });
-            break;
-          }
-
-          if (existingCredits) {
-            // Update existing record
-            const { error: updateError } = await supabase
-              .from('user_credits')
-              .update({ 
-                credits: existingCredits.credits + 1,
-                updated_at: new Date().toISOString()
-              })
-              .eq('user_id', userId);
-
-            if (updateError) {
-              logStep("ERROR: Failed to update credits", { error: updateError.message });
-            } else {
-              logStep("Successfully updated credits", { userId, newTotal: existingCredits.credits + 1 });
-            }
-          } else {
-            // Create new record
-            const { error: insertError } = await supabase
-              .from('user_credits')
-              .insert({
-                user_id: userId,
-                credits: 1,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-
-            if (insertError) {
-              logStep("ERROR: Failed to insert credits", { error: insertError.message });
-            } else {
-              logStep("Successfully created credits record", { userId, credits: 1 });
-            }
-          }
-        } else if (session.mode === "subscription") {
-          // Subscription payment - handle via subscription events
+        // For subscription mode, subscription events will handle the activation
+        if (session.mode === "subscription") {
           logStep("Subscription checkout completed - will be handled by subscription events");
         }
         break;
@@ -160,16 +112,13 @@ serve(async (req) => {
           }
 
           if (userId) {
-            const { error } = await supabase
-              .from('user_subscriptions')
-              .upsert({
-                user_id: userId,
-                stripe_subscription_id: subscription.id,
-                status: subscription.status,
-                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                updated_at: new Date().toISOString()
-              }, { onConflict: 'user_id' });
+            const { error } = await supabase.rpc('update_subscription_status', {
+              p_user_id: userId,
+              p_stripe_subscription_id: subscription.id,
+              p_status: subscription.status,
+              p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+              p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
+            });
 
             if (error) {
               logStep("ERROR: Failed to update subscription", { error: error.message });
@@ -218,16 +167,13 @@ serve(async (req) => {
         }
 
         if (userId) {
-          const { error } = await supabase
-            .from('user_subscriptions')
-            .upsert({
-              user_id: userId,
-              stripe_subscription_id: subscription.id,
-              status: subscription.status,
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
+          const { error } = await supabase.rpc('update_subscription_status', {
+            p_user_id: userId,
+            p_stripe_subscription_id: subscription.id,
+            p_status: subscription.status,
+            p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+            p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
+          });
 
           if (error) {
             logStep("ERROR: Failed to update subscription status", { error: error.message });

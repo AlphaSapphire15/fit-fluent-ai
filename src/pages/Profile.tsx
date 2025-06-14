@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { getDisplayText, planType, credits, subscriptionActive, subscriptionEndDate, loading } = useUserPlan();
+  const { getDisplayText, planType, subscriptionActive, subscriptionEndDate, loading } = useUserPlan();
   const [isLoading, setIsLoading] = useState(false);
   const [description, setDescription] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -82,8 +82,21 @@ const Profile = () => {
 
   const getPlanStatusColor = () => {
     if (planType === 'unlimited') return 'text-green-600';
-    if (planType === 'credits') return 'text-blue-600';
+    if (planType === 'free_trial') return 'text-blue-600';
     return 'text-gray-600';
+  };
+
+  const getPlanDisplayName = () => {
+    switch (planType) {
+      case 'unlimited':
+        return 'Unlimited Plan';
+      case 'free_trial':
+        return 'Free Trial';
+      case 'expired':
+        return 'No Active Plan';
+      default:
+        return 'Unknown Plan';
+    }
   };
 
   return (
@@ -107,18 +120,9 @@ const Profile = () => {
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Current Plan:</span>
                   <span className={`font-semibold ${getPlanStatusColor()}`}>
-                    {planType === 'unlimited' ? 'Unlimited Plan' : 
-                     planType === 'credits' ? 'One-Time Credits' : 
-                     'No Active Plan'}
+                    {getPlanDisplayName()}
                   </span>
                 </div>
-                
-                {planType === 'credits' && (
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Credits Remaining:</span>
-                    <span className="font-semibold text-blue-600">{credits}</span>
-                  </div>
-                )}
                 
                 {planType === 'unlimited' && subscriptionEndDate && (
                   <div className="flex justify-between items-center">
@@ -132,6 +136,17 @@ const Profile = () => {
                 <div className="pt-2">
                   <p className="text-sm text-muted-foreground">{getDisplayText()}</p>
                 </div>
+
+                {planType === 'expired' && (
+                  <div className="pt-2">
+                    <Button 
+                      onClick={() => window.location.href = '/pricing'}
+                      className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white"
+                    >
+                      Get Unlimited Plan
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -216,26 +231,28 @@ const Profile = () => {
         </Card>
 
         {/* Subscription Management Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              Subscription Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Manage your subscription, update payment methods, or cancel your plan through our secure customer portal.
-            </p>
-            <Button 
-              onClick={handleSubscriptionManagement}
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? "Loading..." : "Manage Subscription"}
-            </Button>
-          </CardContent>
-        </Card>
+        {subscriptionActive && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Subscription Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Manage your subscription, update payment methods, or cancel your plan through our secure customer portal.
+              </p>
+              <Button 
+                onClick={handleSubscriptionManagement}
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? "Loading..." : "Manage Subscription"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </PageContainer>
   );

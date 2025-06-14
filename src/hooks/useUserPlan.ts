@@ -4,8 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface UserPlanStatus {
-  planType: 'none' | 'credits' | 'unlimited';
-  credits: number;
+  planType: 'free_trial' | 'unlimited' | 'expired';
+  hasUsedFreeTrial: boolean;
   subscriptionActive: boolean;
   subscriptionEndDate: string | null;
   loading: boolean;
@@ -14,8 +14,8 @@ export interface UserPlanStatus {
 export const useUserPlan = () => {
   const { user } = useAuth();
   const [planStatus, setPlanStatus] = useState<UserPlanStatus>({
-    planType: 'none',
-    credits: 0,
+    planType: 'free_trial',
+    hasUsedFreeTrial: false,
     subscriptionActive: false,
     subscriptionEndDate: null,
     loading: true,
@@ -24,8 +24,8 @@ export const useUserPlan = () => {
   const fetchPlanStatus = async () => {
     if (!user) {
       setPlanStatus({
-        planType: 'none',
-        credits: 0,
+        planType: 'expired',
+        hasUsedFreeTrial: false,
         subscriptionActive: false,
         subscriptionEndDate: null,
         loading: false,
@@ -36,9 +36,9 @@ export const useUserPlan = () => {
     try {
       console.log("Fetching plan status for user:", user.id);
       
-      // Check subscription status first
+      // Check subscription status using direct query since types aren't updated yet
       const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from('user_subscriptions')
+        .from('user_subscriptions' as any)
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -49,7 +49,6 @@ export const useUserPlan = () => {
       let subscriptionEndDate = null;
 
       if (!subscriptionError && subscriptionData) {
-        // Check if subscription is active and not expired
         const now = new Date();
         const endDate = subscriptionData.current_period_end ? new Date(subscriptionData.current_period_end) : null;
         
@@ -62,43 +61,38 @@ export const useUserPlan = () => {
         console.log("Subscription status:", subscriptionData.status, "End date:", endDate, "Active:", hasActiveSubscription);
       }
 
-      // Check credits
-      const { data: creditsData, error: creditsError } = await supabase
-        .from('user_credits')
-        .select('credits')
-        .eq('user_id', user.id)
-        .single();
+      // Check if user has used their free trial
+      const { data: analysesData, error: analysesError } = await supabase
+        .from('user_analyses' as any)
+        .select('id')
+        .eq('user_id', user.id);
 
-      console.log("Credits data:", creditsData, "Error:", creditsError);
+      console.log("Analyses data:", analysesData, "Error:", analysesError);
 
-      let credits = 0;
-      if (!creditsError && creditsData) {
-        credits = creditsData.credits || 0;
-      }
+      const hasUsedFreeTrial = !analysesError && analysesData && analysesData.length > 0;
 
       // Determine plan type
-      let planType: 'none' | 'credits' | 'unlimited' = 'none';
+      let planType: 'free_trial' | 'unlimited' | 'expired' = 'expired';
       if (hasActiveSubscription) {
         planType = 'unlimited';
-      } else if (credits > 0) {
-        planType = 'credits';
+      } else if (!hasUsedFreeTrial) {
+        planType = 'free_trial';
       }
 
-      console.log("Final plan status:", { planType, credits, hasActiveSubscription });
+      console.log("Final plan status:", { planType, hasUsedFreeTrial, hasActiveSubscription });
 
       setPlanStatus({
         planType,
-        credits,
+        hasUsedFreeTrial,
         subscriptionActive: hasActiveSubscription,
         subscriptionEndDate,
         loading: false,
       });
     } catch (error) {
       console.error('Error fetching plan status:', error);
-      // Set default state if there's an error
       setPlanStatus({
-        planType: 'none',
-        credits: 0,
+        planType: 'expired',
+        hasUsedFreeTrial: false,
         subscriptionActive: false,
         subscriptionEndDate: null,
         loading: false,
@@ -106,55 +100,53 @@ export const useUserPlan = () => {
     }
   };
 
-  const useCredit = async (): Promise<boolean> => {
+  const useAnalysis = async (): Promise<boolean> => {
     if (!user) return false;
 
     try {
-      console.log("Attempting to use credit, current status:", planStatus);
+      console.log("Attempting to use analysis, current status:", planStatus);
       
-      // First check if user has access
+      // Check if user has access
       if (!hasAccess()) {
         console.log("No access available");
         return false;
       }
 
-      // If user has unlimited subscription, allow usage without deducting credits
+      // If user has unlimited subscription, allow usage without recording
       if (planStatus.planType === 'unlimited') {
         console.log("Unlimited plan - allowing usage");
         return true;
       }
 
-      // If user has credits, deduct one
-      if (planStatus.credits > 0) {
-        console.log("Deducting credit");
-        const { error } = await supabase
-          .from('user_credits')
-          .update({ 
-            credits: planStatus.credits - 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
+      // If user has free trial available, record usage
+      if (planStatus.planType === 'free_trial') {
+        console.log("Using free trial");
+        const { error } = await supabase.rpc('record_analysis', {
+          p_user_id: user.id,
+          p_image_url: null,
+          p_analysis_result: null
+        });
 
         if (error) {
-          console.error('Error using credit:', error);
+          console.error('Error recording analysis:', error);
           return false;
         }
 
-        // Refresh plan status after using credit
+        // Refresh plan status after using free trial
         await fetchPlanStatus();
         return true;
       }
 
       return false;
     } catch (error) {
-      console.error('Error using credit:', error);
+      console.error('Error using analysis:', error);
       return false;
     }
   };
 
   const hasAccess = (): boolean => {
-    const access = planStatus.planType === 'unlimited' || planStatus.credits > 0;
-    console.log("Has access check:", access, "Plan type:", planStatus.planType, "Credits:", planStatus.credits);
+    const access = planStatus.planType === 'unlimited' || planStatus.planType === 'free_trial';
+    console.log("Has access check:", access, "Plan type:", planStatus.planType);
     return access;
   };
 
@@ -164,9 +156,9 @@ export const useUserPlan = () => {
     switch (planStatus.planType) {
       case 'unlimited':
         return 'Unlimited Plan';
-      case 'credits':
-        return `${planStatus.credits} credit${planStatus.credits !== 1 ? 's' : ''} remaining`;
-      case 'none':
+      case 'free_trial':
+        return 'Free Trial Available';
+      case 'expired':
         return 'No active plan';
       default:
         return 'Unknown plan';
@@ -180,7 +172,7 @@ export const useUserPlan = () => {
   return {
     ...planStatus,
     hasAccess,
-    useCredit,
+    useAnalysis,
     refreshPlanStatus: fetchPlanStatus,
     getDisplayText,
   };

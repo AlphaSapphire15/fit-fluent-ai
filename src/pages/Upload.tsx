@@ -30,7 +30,7 @@ const Upload = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const { isAnalyzing, analysisResult, analyzeImage, setAnalysisResult } = useImageAnalysis();
-  const { hasAccess, useCredit, getDisplayText, refreshPlanStatus, loading: planLoading } = useUserPlan();
+  const { hasAccess, useAnalysis, getDisplayText, refreshPlanStatus, loading: planLoading, planType } = useUserPlan();
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
@@ -68,7 +68,7 @@ const Upload = () => {
           
           toast({
             title: "Plan Updated!",
-            description: "You can now analyze your outfit."
+            description: "You now have unlimited access to analyze your outfits."
           });
         } catch (error) {
           console.error("Error refreshing plan:", error);
@@ -140,7 +140,7 @@ const Upload = () => {
     
     // Check if user has access before proceeding
     if (!hasAccess()) {
-      setDialogMessage("You need to purchase a plan to analyze outfits.");
+      setDialogMessage("You need to purchase the unlimited plan to analyze more outfits.");
       setShowDialog(true);
       return;
     }
@@ -148,10 +148,10 @@ const Upload = () => {
     try {
       setIsSubmitting(true);
       
-      // Use credit first
-      const creditUsed = await useCredit();
-      if (!creditUsed) {
-        setDialogMessage("Unable to use credit. Please try again or contact support.");
+      // Use analysis credit first
+      const analysisUsed = await useAnalysis();
+      if (!analysisUsed) {
+        setDialogMessage("Unable to process analysis. Please try again or contact support.");
         setShowDialog(true);
         return;
       }
@@ -191,6 +191,21 @@ const Upload = () => {
     );
   }
 
+  const getStatusDisplay = () => {
+    switch (planType) {
+      case 'unlimited':
+        return { text: 'Unlimited Plan', color: 'text-green-600' };
+      case 'free_trial':
+        return { text: 'Free Trial Available', color: 'text-blue-600' };
+      case 'expired':
+        return { text: 'Free Trial Used', color: 'text-red-600' };
+      default:
+        return { text: 'Loading...', color: 'text-gray-600' };
+    }
+  };
+
+  const statusDisplay = getStatusDisplay();
+
   return (
     <PageContainer showBackButton>
       <div className="mb-8 text-center">
@@ -199,7 +214,9 @@ const Upload = () => {
         
         {/* Display plan status */}
         <div className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg inline-block">
-          <span className="text-sm font-medium">{getDisplayText()}</span>
+          <span className={`text-sm font-medium ${statusDisplay.color}`}>
+            {statusDisplay.text}
+          </span>
         </div>
       </div>
 
@@ -207,15 +224,15 @@ const Upload = () => {
         <div className="max-w-2xl mx-auto">
           {!hasAccess() && !analysisResult ? (
             <div className="text-center space-y-6 p-8 glass-card rounded-xl">
-              <h2 className="text-xl font-semibold">No Credits Available</h2>
+              <h2 className="text-xl font-semibold">Get Unlimited Access</h2>
               <p className="text-muted-foreground">
-                You need to purchase a plan to analyze your outfit.
+                You've used your free trial. Get unlimited outfit analyses with our monthly plan.
               </p>
               <Button 
                 onClick={handlePurchase}
                 className="bg-gradient-to-r from-lilac to-neonBlue text-white rounded-full"
               >
-                Purchase Plan
+                Get Unlimited Plan - $10/month
               </Button>
             </div>
           ) : (
@@ -249,7 +266,7 @@ const Upload = () => {
                 variant="outline"
                 className="py-6 h-auto text-lg rounded-full border-neonBlue text-neonBlue hover:bg-neonBlue hover:text-white"
               >
-                Get More Credits
+                Get Unlimited Plan
               </Button>
             )}
           </div>
@@ -259,10 +276,10 @@ const Upload = () => {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Image Analysis Error</DialogTitle>
+            <DialogTitle>Analysis Status</DialogTitle>
           </DialogHeader>
           <DialogDescription>
-            {dialogMessage || "Error analyzing your image. Please try a JPG/PNG."}
+            {dialogMessage || "Error analyzing your image. Please try again."}
           </DialogDescription>
           <DialogFooter>
             <Button onClick={() => setShowDialog(false)}>OK</Button>
