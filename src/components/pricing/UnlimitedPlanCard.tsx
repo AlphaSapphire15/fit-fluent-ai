@@ -53,7 +53,7 @@ const UnlimitedPlanCard: React.FC<UnlimitedPlanCardProps> = ({ onSelectPlan, isL
         <Button
           onClick={onSelectPlan}
           variant="gradient"
-          className="w-full py-3 h-auto rounded-full text-sm font-medium"
+          className="w-full py-6 h-auto rounded-full border-lilac text-white hover:bg-lilac hover:text-white"
           disabled={isLoading}
           size="lg"
         >
