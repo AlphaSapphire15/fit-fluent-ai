@@ -36,57 +36,42 @@ export const useUserPlan = () => {
     try {
       console.log("Fetching plan status for user:", user.id);
       
-      // Check subscription status
-      const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from('user_subscriptions')
+      // Check user credits (this acts as our plan system for now)
+      const { data: creditsData, error: creditsError } = await supabase
+        .from('user_credits')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      console.log("Subscription data:", subscriptionData, "Error:", subscriptionError);
+      console.log("Credits data:", creditsData, "Error:", creditsError);
 
-      let hasActiveSubscription = false;
-      let subscriptionEndDate = null;
-
-      if (!subscriptionError && subscriptionData) {
-        const now = new Date();
-        const endDate = subscriptionData.current_period_end ? new Date(subscriptionData.current_period_end) : null;
-        
-        hasActiveSubscription = subscriptionData.status === 'active' && 
-          endDate && 
-          endDate > now;
-        
-        subscriptionEndDate = subscriptionData.current_period_end;
-        
-        console.log("Subscription status:", subscriptionData.status, "End date:", endDate, "Active:", hasActiveSubscription);
-      }
-
-      // Check if user has used their free trial
-      const { data: analysesData, error: analysesError } = await supabase
-        .from('user_analyses')
+      // Check if user has made any uploads (to determine if free trial was used)
+      const { data: uploadsData, error: uploadsError } = await supabase
+        .from('uploads')
         .select('id')
         .eq('user_id', user.id)
         .limit(1);
 
-      console.log("Analyses data:", analysesData, "Error:", analysesError);
+      console.log("Uploads data:", uploadsData, "Error:", uploadsError);
 
-      const hasUsedFreeTrial = !analysesError && analysesData && analysesData.length > 0;
+      const hasUsedFreeTrial = !uploadsError && uploadsData && uploadsData.length > 0;
+      const hasCredits = !creditsError && creditsData && creditsData.credits > 0;
 
-      // Determine plan type
+      // Determine plan type based on credits and usage
       let planType: 'free_trial' | 'unlimited' | 'expired' = 'expired';
-      if (hasActiveSubscription) {
-        planType = 'unlimited';
+      if (hasCredits) {
+        planType = 'unlimited'; // User has credits, so they have unlimited access
       } else if (!hasUsedFreeTrial) {
-        planType = 'free_trial';
+        planType = 'free_trial'; // User hasn't used their free trial yet
       }
 
-      console.log("Final plan status:", { planType, hasUsedFreeTrial, hasActiveSubscription });
+      console.log("Final plan status:", { planType, hasUsedFreeTrial, hasCredits });
 
       setPlanStatus({
         planType,
         hasUsedFreeTrial,
-        subscriptionActive: hasActiveSubscription,
-        subscriptionEndDate,
+        subscriptionActive: hasCredits,
+        subscriptionEndDate: null, // We don't have subscription end dates in current schema
         loading: false,
       });
     } catch (error) {
@@ -113,25 +98,41 @@ export const useUserPlan = () => {
         return false;
       }
 
-      // If user has unlimited subscription, allow usage without recording
-      if (planStatus.planType === 'unlimited') {
-        console.log("Unlimited plan - allowing usage");
+      // If user has credits, use the Supabase function to deduct a credit
+      if (planStatus.subscriptionActive) {
+        console.log("User has credits - using credit system");
+        const { data, error } = await supabase.rpc('use_analysis_credit', {
+          user_uuid: user.id
+        });
+
+        if (error) {
+          console.error('Error using credit:', error);
+          return false;
+        }
+
+        if (!data) {
+          console.log("No credits available");
+          return false;
+        }
+
+        // Refresh plan status after using credit
+        await fetchPlanStatus();
         return true;
       }
 
-      // If user has free trial available, record usage
-      if (planStatus.planType === 'free_trial') {
+      // If user has free trial available, record usage in uploads
+      if (planType === 'free_trial') {
         console.log("Using free trial");
         const { error } = await supabase
-          .from('user_analyses')
+          .from('uploads')
           .insert({
             user_id: user.id,
-            image_url: null,
-            analysis_result: null
+            file_hash: 'free_trial_placeholder',
+            score: null
           });
 
         if (error) {
-          console.error('Error recording analysis:', error);
+          console.error('Error recording free trial usage:', error);
           return false;
         }
 
