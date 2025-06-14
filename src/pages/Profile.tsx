@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import PageContainer from "@/components/PageContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,12 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, CreditCard } from "lucide-react";
+import { Camera, CreditCard, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Profile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getDisplayText, planType, credits, subscriptionActive, subscriptionEndDate, loading } = useUserPlan();
   const [isLoading, setIsLoading] = useState(false);
   const [description, setDescription] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -77,10 +80,62 @@ const Profile = () => {
     }
   };
 
+  const getPlanStatusColor = () => {
+    if (planType === 'unlimited') return 'text-green-600';
+    if (planType === 'credits') return 'text-blue-600';
+    return 'text-gray-600';
+  };
+
   return (
     <PageContainer>
       <div className="max-w-2xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold text-center mb-8">Your Profile</h1>
+
+        {/* Plan Status Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Plan Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loading ? (
+              <p className="text-muted-foreground">Loading plan status...</p>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">Current Plan:</span>
+                  <span className={`font-semibold ${getPlanStatusColor()}`}>
+                    {planType === 'unlimited' ? 'Unlimited Plan' : 
+                     planType === 'credits' ? 'One-Time Credits' : 
+                     'No Active Plan'}
+                  </span>
+                </div>
+                
+                {planType === 'credits' && (
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Credits Remaining:</span>
+                    <span className="font-semibold text-blue-600">{credits}</span>
+                  </div>
+                )}
+                
+                {planType === 'unlimited' && subscriptionEndDate && (
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Subscription ends:</span>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(subscriptionEndDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="pt-2">
+                  <p className="text-sm text-muted-foreground">{getDisplayText()}</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Profile Picture Section */}
         <Card>

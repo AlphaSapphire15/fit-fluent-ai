@@ -1,4 +1,3 @@
-
 /// <reference types="vite/client" />
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -100,9 +99,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Respect the next parameter if provided
             navigate(nextPath, { replace: true });
           } else {
-            // Default redirect to landing page instead of directly to upload
-            console.log("Signed in, default redirect to home page");
-            navigate('/', { replace: true });
+            // Default redirect to upload page for signed-in users
+            console.log("Signed in, default redirect to upload page");
+            navigate('/upload', { replace: true });
           }
         } else if (event === 'SIGNED_OUT') {
           navigate('/');
