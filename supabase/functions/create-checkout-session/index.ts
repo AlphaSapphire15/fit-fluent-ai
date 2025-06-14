@@ -1,44 +1,29 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@12.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Helper logging function for enhanced debugging
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: corsHeaders,
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     logStep("Function started");
-    const { priceId } = await req.json();
     
-    if (!priceId) {
-      throw new Error("Price ID is required");
-    }
-
+    const { priceId } = await req.json();
     logStep("Request received for price ID", { priceId });
 
-    // Initialize Stripe with proper error handling
-    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeSecretKey) {
-      logStep("ERROR: Missing STRIPE_SECRET_KEY");
-      throw new Error("Stripe configuration error: Missing secret key");
-    }
-    
-    // Get price IDs from environment
     const oneTimePrice = Deno.env.get("STRIPE_PRICE_ONE_TIME");
     const subMonthlyPrice = Deno.env.get("STRIPE_PRICE_SUB_MONTHLY");
     
@@ -48,56 +33,59 @@ serve(async (req) => {
       requestedPrice: priceId 
     });
 
-    // Validate price ID
-    if (priceId !== oneTimePrice && priceId !== subMonthlyPrice) {
-      logStep("WARNING: Requested price ID doesn't match known prices", { 
-        requestedPrice: priceId, 
-        knownPrices: { oneTimePrice, subMonthlyPrice } 
-      });
-      // We'll continue anyway since the ID might be valid in Stripe
+    const mode = priceId === subMonthlyPrice ? "subscription" : "payment";
+    logStep("Checkout mode determined", { mode });
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+
+    const authHeader = req.headers.get("Authorization")!;
+    const token = authHeader.replace("Bearer ", "");
+    const { data } = await supabase.auth.getUser(token);
+    const user = data.user;
+
+    if (!user?.email) {
+      throw new Error("User not authenticated or email not available");
     }
-    
-    const stripe = new Stripe(stripeSecretKey, {
+
+    logStep("User identified", { userId: user.id });
+
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2022-11-15",
     });
 
-    // Determine if this is a one-time payment or subscription
-    const mode = priceId === oneTimePrice ? "payment" : "subscription";
-    logStep("Checkout mode determined", { mode });
-    
-    // Extract auth header to identify the user
-    const authHeader = req.headers.get("Authorization");
-    let userId = null;
-    
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      try {
-        // Call Supabase API to validate the token and get user ID
-        const authResponse = await fetch(`${Deno.env.get("SUPABASE_URL")}/auth/v1/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            apikey: Deno.env.get("SUPABASE_ANON_KEY") || "",
-          },
-        });
-        
-        if (authResponse.ok) {
-          const userData = await authResponse.json();
-          userId = userData.id;
-          logStep("User identified", { userId });
+    // Find or create customer
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    });
+
+    let customerId;
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+      // Update customer metadata with user_id
+      await stripe.customers.update(customerId, {
+        metadata: {
+          user_id: user.id
         }
-      } catch (error) {
-        logStep("Failed to identify user", { error: error.message });
-        // Continue without user ID
-      }
+      });
+    } else {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: {
+          user_id: user.id
+        }
+      });
+      customerId = customer.id;
     }
-    
-    // Create better success URLs based on payment type
+
+    // Create checkout session
     const origin = req.headers.get("origin") || "http://localhost:3000";
-    const successUrl = `${origin}/upload?session_id={CHECKOUT_SESSION_ID}&payment_success=true`;
-    const cancelUrl = `${origin}/pricing?payment_cancelled=true`;
-    
-    // Create a checkout session
     const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      client_reference_id: user.id, // This is crucial for the webhook
       line_items: [
         {
           price: priceId,
@@ -105,12 +93,10 @@ serve(async (req) => {
         },
       ],
       mode: mode,
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      client_reference_id: userId, // Include user ID if available for identification
+      success_url: `${origin}/upload?session_id={CHECKOUT_SESSION_ID}&payment_success=true`,
+      cancel_url: `${origin}/pricing`,
       metadata: {
-        userId: userId || "anonymous",
-        planType: priceId === oneTimePrice ? "one-time" : "subscription"
+        user_id: user.id
       }
     });
 
@@ -127,13 +113,12 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    logStep("Error creating checkout session", { message: error.message });
-    
+    console.error("Error creating checkout session:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
+        status: 500,
       }
     );
   }

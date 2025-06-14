@@ -121,6 +121,9 @@ serve(async (req) => {
               logStep("Successfully created credits record", { userId, credits: 1 });
             }
           }
+        } else if (session.mode === "subscription") {
+          // Subscription payment - handle via subscription events
+          logStep("Subscription checkout completed - will be handled by subscription events");
         }
         break;
       }
@@ -129,29 +132,55 @@ serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         logStep("Processing subscription payment", { invoiceId: invoice.id });
 
-        // For subscription payments, we don't add credits but update subscription status
         if (invoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
           logStep("Retrieved subscription", { subscriptionId: subscription.id });
 
-          // Get user ID from subscription metadata or customer
+          // Get customer to find user_id
           const customer = await stripe.customers.retrieve(subscription.customer as string);
-          const userId = customer.metadata?.user_id || subscription.metadata?.user_id;
+          
+          let userId = null;
+          if (typeof customer === 'object' && !customer.deleted) {
+            userId = customer.metadata?.user_id;
+          }
+
+          if (!userId) {
+            // Try to find user by email
+            const customerEmail = typeof customer === 'object' && !customer.deleted ? customer.email : null;
+            if (customerEmail) {
+              const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
+              if (!userError) {
+                const user = userData.users.find(u => u.email === customerEmail);
+                if (user) {
+                  userId = user.id;
+                  logStep("Found user by email", { email: customerEmail, userId });
+                }
+              }
+            }
+          }
 
           if (userId) {
-            const { error } = await supabase.rpc('update_subscription_status', {
-              p_user_id: userId,
-              p_stripe_subscription_id: subscription.id,
-              p_status: subscription.status,
-              p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
-            });
+            const { error } = await supabase
+              .from('user_subscriptions')
+              .upsert({
+                user_id: userId,
+                stripe_subscription_id: subscription.id,
+                status: subscription.status,
+                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                updated_at: new Date().toISOString()
+              }, { onConflict: 'user_id' });
 
             if (error) {
               logStep("ERROR: Failed to update subscription", { error: error.message });
             } else {
               logStep("Successfully updated subscription", { userId, status: subscription.status });
             }
+          } else {
+            logStep("ERROR: Could not find user_id for subscription", { 
+              customerId: subscription.customer,
+              subscriptionId: subscription.id 
+            });
           }
         }
         break;
@@ -165,24 +194,51 @@ serve(async (req) => {
           status: subscription.status 
         });
 
-        // Get user ID from subscription metadata or customer
+        // Get customer to find user_id
         const customer = await stripe.customers.retrieve(subscription.customer as string);
-        const userId = customer.metadata?.user_id || subscription.metadata?.user_id;
+        
+        let userId = null;
+        if (typeof customer === 'object' && !customer.deleted) {
+          userId = customer.metadata?.user_id;
+        }
+
+        if (!userId) {
+          // Try to find user by email
+          const customerEmail = typeof customer === 'object' && !customer.deleted ? customer.email : null;
+          if (customerEmail) {
+            const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
+            if (!userError) {
+              const user = userData.users.find(u => u.email === customerEmail);
+              if (user) {
+                userId = user.id;
+                logStep("Found user by email", { email: customerEmail, userId });
+              }
+            }
+          }
+        }
 
         if (userId) {
-          const { error } = await supabase.rpc('update_subscription_status', {
-            p_user_id: userId,
-            p_stripe_subscription_id: subscription.id,
-            p_status: subscription.status,
-            p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
-          });
+          const { error } = await supabase
+            .from('user_subscriptions')
+            .upsert({
+              user_id: userId,
+              stripe_subscription_id: subscription.id,
+              status: subscription.status,
+              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
 
           if (error) {
             logStep("ERROR: Failed to update subscription status", { error: error.message });
           } else {
             logStep("Successfully updated subscription status", { userId, status: subscription.status });
           }
+        } else {
+          logStep("ERROR: Could not find user_id for subscription update", { 
+            customerId: subscription.customer,
+            subscriptionId: subscription.id 
+          });
         }
         break;
       }
