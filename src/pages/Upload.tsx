@@ -2,12 +2,8 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { useStyle } from "@/contexts/StyleContext";
 import PageContainer from "@/components/PageContainer";
-import AnalysisResult from "@/components/AnalysisResult";
-import DragAndDrop from "@/components/upload/DragAndDrop";
-import FeedbackToneSelector from "@/components/upload/FeedbackToneSelector";
 import { useImageAnalysis } from "@/hooks/useImageAnalysis";
 import { useUserPlan } from "@/hooks/useUserPlan";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +15,12 @@ import {
   DialogHeader,
   DialogFooter
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import UploadHeader from "@/components/upload/UploadHeader";
+import PlanPurchasePrompt from "@/components/upload/PlanPurchasePrompt";
+import UploadInterface from "@/components/upload/UploadInterface";
+import ResultsDisplay from "@/components/upload/ResultsDisplay";
+import LoadingScreen from "@/components/upload/LoadingScreen";
 
 const Upload = () => {
   const { user } = useAuth();
@@ -178,16 +180,9 @@ const Upload = () => {
 
   if (planLoading || isRefreshingPlan) {
     return (
-      <PageContainer>
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-neonBlue mx-auto"></div>
-            <p className="text-muted-foreground">
-              {isRefreshingPlan ? "Processing your payment..." : "Loading..."}
-            </p>
-          </div>
-        </div>
-      </PageContainer>
+      <LoadingScreen 
+        message={isRefreshingPlan ? "Processing your payment..." : "Loading..."}
+      />
     );
   }
 
@@ -208,69 +203,32 @@ const Upload = () => {
 
   return (
     <PageContainer showBackButton>
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-satoshi font-bold mb-2">Upload Your Fit</h1>
-        <p className="text-muted-foreground">Let's see what you're wearing today</p>
-        
-        {/* Display plan status */}
-        <div className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg inline-block">
-          <span className={`text-sm font-medium ${statusDisplay.color}`}>
-            {statusDisplay.text}
-          </span>
-        </div>
-      </div>
+      <UploadHeader planStatus={statusDisplay} />
 
       {!analysisResult ? (
         <div className="max-w-2xl mx-auto">
-          {!hasAccess() && !analysisResult ? (
-            <div className="text-center space-y-6 p-8 glass-card rounded-xl">
-              <h2 className="text-xl font-semibold">Get Unlimited Access</h2>
-              <p className="text-muted-foreground">
-                You've used your free trial. Get unlimited outfit analyses with our monthly plan.
-              </p>
-              <Button 
-                onClick={handlePurchase}
-                className="bg-gradient-to-r from-lilac to-neonBlue text-white rounded-full"
-              >
-                Get Unlimited Plan - $10/month
-              </Button>
-            </div>
+          {!hasAccess() ? (
+            <PlanPurchasePrompt onPurchase={handlePurchase} />
           ) : (
-            <>
-              <DragAndDrop
-                preview={preview}
-                isAnalyzing={isAnalyzing || isSubmitting}
-                onFileChange={handleFile}
-                openFileInput={openFileInput}
-                onAnalyze={handleAnalyze}
-              />
-              <div className="my-8">
-                <FeedbackToneSelector tone={tone} setTone={setTone} />
-              </div>
-            </>
+            <UploadInterface
+              preview={preview}
+              isAnalyzing={isAnalyzing}
+              tone={tone}
+              setTone={setTone}
+              onFileChange={handleFile}
+              openFileInput={openFileInput}
+              onAnalyze={handleAnalyze}
+              isSubmitting={isSubmitting}
+            />
           )}
         </div>
       ) : (
-        <div className="space-y-6">
-          <AnalysisResult {...analysisResult} />
-          <div className="flex gap-4 justify-center">
-            <Button
-              onClick={resetState}
-              className="bg-lilac hover:bg-lilac/90 text-white py-6 h-auto text-lg rounded-full"
-            >
-              Upload Another Fit
-            </Button>
-            {!hasAccess() && (
-              <Button
-                onClick={handlePurchase}
-                variant="outline"
-                className="py-6 h-auto text-lg rounded-full border-neonBlue text-neonBlue hover:bg-neonBlue hover:text-white"
-              >
-                Get Unlimited Plan
-              </Button>
-            )}
-          </div>
-        </div>
+        <ResultsDisplay
+          analysisResult={analysisResult}
+          onReset={resetState}
+          onPurchase={handlePurchase}
+          hasAccess={hasAccess()}
+        />
       )}
       
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -286,6 +244,19 @@ const Upload = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleFile(file);
+          }
+        }}
+        accept="image/*"
+        className="hidden"
+      />
     </PageContainer>
   );
 };

@@ -36,12 +36,13 @@ export const useUserPlan = () => {
     try {
       console.log("Fetching plan status for user:", user.id);
       
-      // Check subscription status using raw query since types may not be updated
+      // Check subscription status using raw SQL query since table types may not be updated
       const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from('user_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .rpc('exec_sql', {
+          query: `SELECT * FROM user_subscriptions WHERE user_id = $1 LIMIT 1`,
+          params: [user.id]
+        })
+        .single();
 
       console.log("Subscription data:", subscriptionData, "Error:", subscriptionError);
 
@@ -61,15 +62,17 @@ export const useUserPlan = () => {
         console.log("Subscription status:", subscriptionData.status, "End date:", endDate, "Active:", hasActiveSubscription);
       }
 
-      // Check if user has used their free trial
+      // Check if user has used their free trial using raw SQL query
       const { data: analysesData, error: analysesError } = await supabase
-        .from('user_analyses')
-        .select('id')
-        .eq('user_id', user.id);
+        .rpc('exec_sql', {
+          query: `SELECT COUNT(*) as count FROM user_analyses WHERE user_id = $1`,
+          params: [user.id]
+        })
+        .single();
 
       console.log("Analyses data:", analysesData, "Error:", analysesError);
 
-      const hasUsedFreeTrial = !analysesError && analysesData && analysesData.length > 0;
+      const hasUsedFreeTrial = !analysesError && analysesData && parseInt(analysesData.count) > 0;
 
       // Determine plan type
       let planType: 'free_trial' | 'unlimited' | 'expired' = 'expired';
@@ -118,15 +121,13 @@ export const useUserPlan = () => {
         return true;
       }
 
-      // If user has free trial available, record usage using direct insert
+      // If user has free trial available, record usage using raw SQL
       if (planStatus.planType === 'free_trial') {
         console.log("Using free trial");
         const { error } = await supabase
-          .from('user_analyses')
-          .insert({
-            user_id: user.id,
-            image_url: null,
-            analysis_result: null
+          .rpc('exec_sql', {
+            query: `INSERT INTO user_analyses (user_id, image_url, analysis_result) VALUES ($1, $2, $3)`,
+            params: [user.id, null, null]
           });
 
         if (error) {
