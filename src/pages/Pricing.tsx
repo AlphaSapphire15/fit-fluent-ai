@@ -28,10 +28,13 @@ const Pricing = () => {
       
       console.log("User selecting unlimited plan");
 
+      // Use the environment variable price ID for monthly subscription
+      const priceId = import.meta.env.VITE_PRICE_UNLIMITED || 'price_1RFhvf4EZDpArr1NfeKeTdKf'; // fallback to the working price ID from logs
+
       // Create checkout session for unlimited plan
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { 
-          priceId: 'price_1QT0bABw9zLM1YqNXEu4vR2e' // Monthly unlimited plan price ID
+          priceId: priceId
         }
       });
 

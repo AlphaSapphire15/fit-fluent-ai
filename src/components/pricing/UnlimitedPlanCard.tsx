@@ -12,10 +12,10 @@ interface UnlimitedPlanCardProps {
 const UnlimitedPlanCard: React.FC<UnlimitedPlanCardProps> = ({ onSelectPlan, isLoading }) => {
   return (
     <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden">
-      <div className="absolute top-0 right-0 bg-gradient-to-r from-lilac to-neonBlue text-xs px-3 py-1 font-medium text-white">
+      <div className="absolute top-0 right-0 bg-gradient-to-r from-lilac to-neonBlue text-xs px-3 py-1 font-medium text-white rounded-bl-lg">
         BEST VALUE
       </div>
-      <CardHeader>
+      <CardHeader className="pt-8">
         <CardTitle className="flex justify-between items-center">
           <span className="text-xl font-poppins">Unlimited Plan</span>
           <div>
@@ -53,7 +53,7 @@ const UnlimitedPlanCard: React.FC<UnlimitedPlanCardProps> = ({ onSelectPlan, isL
         <Button
           onClick={onSelectPlan}
           variant="gradient"
-          className="w-full py-6 h-auto rounded-full"
+          className="w-full py-3 h-auto rounded-full text-sm font-medium"
           disabled={isLoading}
           size="lg"
         >
