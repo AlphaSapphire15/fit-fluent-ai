@@ -35,7 +35,7 @@ export const useUploadLogic = () => {
       console.log("Analysis credit used:", analysisUsed);
       
       if (!analysisUsed) {
-        setDialogMessage("Unable to process analysis. Please try again or contact support if you have an active subscription.");
+        setDialogMessage("You don't have access to analyze outfits. You can use your free trial or purchase credits/subscription to continue.");
         setShowDialog(true);
         return;
       }
@@ -44,14 +44,10 @@ export const useUploadLogic = () => {
       console.log("Proceeding with image analysis...");
       await analyzeImage(currentFile, tone);
       
-      toast({
-        title: "Analysis Complete!",
-        description: "Your outfit has been analyzed successfully."
-      });
-      
     } catch (error) {
       console.error("Analysis error:", error);
-      setDialogMessage("Unable to analyze this image. Please try with a different photo.");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setDialogMessage(`Analysis failed: ${errorMessage}. Please try with a different photo or contact support.`);
       setShowDialog(true);
       setPreview(null);
       // Refresh plan status in case there was an error

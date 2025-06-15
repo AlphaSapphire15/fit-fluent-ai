@@ -15,33 +15,12 @@ export const useImageAnalysis = () => {
     setIsAnalyzing(true);
 
     try {
-      console.log("Checking if user has available credits");
+      console.log("Starting image analysis process");
       
-      // Check if user has available credits
-      const { data: hasCredits, error: creditsError } = await supabase.rpc('has_available_credits', {
-        user_uuid: (await supabase.auth.getUser()).data.user?.id
-      });
-      
-      if (creditsError) {
-        console.error('Error checking credits:', creditsError);
-        throw new Error('Failed to check available credits');
-      }
-      
-      if (!hasCredits) {
-        console.log('User has no available credits');
-        toast({
-          title: "No Credits Available",
-          description: "Please purchase a plan to analyze your outfit.",
-          variant: "destructive",
-        });
-        throw new Error('No available credits');
-      }
-
-      console.log("User has credits, proceeding with analysis");
+      console.log("Preparing image for analysis");
+      const imageUrl = await prepareImageForAnalysis(inputBase64OrFile);
       
       console.log("Calling analyze-outfit function with image data and tone:", tone);
-      
-      const imageUrl = await prepareImageForAnalysis(inputBase64OrFile);
       
       const { data, error } = await supabase.functions.invoke('analyze-outfit', {
         body: { imageUrl, tone }
@@ -49,7 +28,11 @@ export const useImageAnalysis = () => {
 
       if (error) {
         console.error('Function invocation error:', error);
-        throw error;
+        throw new Error(`Analysis failed: ${error.message || 'Unknown error'}`);
+      }
+
+      if (!data || !data.analysis) {
+        throw new Error('No analysis data received from server');
       }
 
       console.log("Received analysis:", data.analysis);
@@ -68,23 +51,21 @@ export const useImageAnalysis = () => {
 
       console.log("Processed analysis result:", result);
       
-      // Use a credit for this analysis
-      const { error: useCreditsError } = await supabase.rpc('use_analysis_credit', {
-        user_uuid: (await supabase.auth.getUser()).data.user?.id
+      setAnalysisResult(result);
+      
+      toast({
+        title: "Analysis Complete!",
+        description: "Your outfit has been analyzed successfully."
       });
       
-      if (useCreditsError) {
-        console.error('Error using credit:', useCreditsError);
-        // Continue anyway since the analysis was successful
-      }
-      
-      setAnalysisResult(result);
     } catch (err) {
       console.error('Analysis error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      
       toast({
         variant: "destructive",
         title: "Analysis failed",
-        description: "Please try again with a different image.",
+        description: errorMessage,
       });
       throw err;
     } finally {
