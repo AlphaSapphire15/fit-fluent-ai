@@ -137,7 +137,7 @@ export const PricingSection = () => {
               className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto rounded-full"
               disabled={isLoading}
             >
-              {isLoading ? "Processing..." : "Choose One-Time Plan"}
+              {isLoading ? "Processing..." : "Choose One-Time"}
             </Button>
           </div>
 
@@ -167,7 +167,7 @@ export const PricingSection = () => {
               className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
               disabled={isLoading}
             >
-              {isLoading ? "Processing..." : "Choose Unlimited Plan"}
+              {isLoading ? "Processing..." : "Choose Unlimited"}
             </Button>
           </div>
         </div>

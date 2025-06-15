@@ -45,7 +45,7 @@ const FreeTrialCard: React.FC<FreeTrialCardProps> = ({ onStartTrial }) => {
           className="w-full py-6 h-auto rounded-full border-lilac text-lilac hover:bg-lilac hover:text-white"
           size="lg"
         >
-          Start Free Trial (3 Analyses)
+          Start Free Trial
         </Button>
       </CardFooter>
     </Card>
