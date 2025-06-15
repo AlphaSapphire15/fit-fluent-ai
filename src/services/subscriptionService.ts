@@ -2,7 +2,8 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const fetchUserSubscription = async (userId: string) => {
-  const { data: subscriptionData, error: subscriptionError } = await supabase
+  // Use any to bypass TypeScript errors until types are regenerated
+  const { data: subscriptionData, error: subscriptionError } = await (supabase as any)
     .from('user_subscriptions')
     .select('*')
     .eq('user_id', userId)
