@@ -16,17 +16,17 @@ const FreeTrialCard: React.FC<FreeTrialCardProps> = ({ onStartTrial }) => {
           <span className="text-xl font-poppins">Free Trial</span>
           <span className="text-2xl font-bold text-lilac">Free</span>
         </CardTitle>
-        <CardDescription>Get 3 outfit analyses to try it out</CardDescription>
+        <CardDescription>Try it out for free</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
         <ul className="space-y-3">
           <li className="flex items-center gap-2">
             <CheckIcon size={18} className="text-lilac min-w-[18px]" />
-            <span>3 complete outfit analyses</span>
+            <span>3 free outfit analyses</span>
           </li>
           <li className="flex items-center gap-2">
             <CheckIcon size={18} className="text-lilac min-w-[18px]" />
-            <span>Detailed style recommendations</span>
+            <span>Complete style recommendations</span>
           </li>
           <li className="flex items-center gap-2">
             <CheckIcon size={18} className="text-lilac min-w-[18px]" />
