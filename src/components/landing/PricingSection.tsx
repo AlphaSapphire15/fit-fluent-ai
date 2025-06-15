@@ -15,7 +15,6 @@ export const PricingSection = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   // For scroll & highlight animation
   const sectionRef = useRef<HTMLDivElement>(null);
   const [highlight, setHighlight] = useState(false);
@@ -24,10 +23,9 @@ export const PricingSection = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const plan = urlParams.get('plan');
-    if (plan && user) {
-      console.log("Auto-selecting plan from URL parameter:", plan);
-      setSelectedPlan(plan);
-      handlePlanSelection(plan as "one-time" | "subscription");
+    if (plan && user && plan === "unlimited") {
+      console.log("Auto-selecting unlimited plan from URL parameter:", plan);
+      handleUnlimitedPlan();
     }
     // if user only lands with "plan", scroll to pricing even if not logged in
     if (plan) {
@@ -40,28 +38,26 @@ export const PricingSection = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search, user]);
 
-  const handlePlanSelection = async (type: "one-time" | "subscription") => {
+  const handleUnlimitedPlan = async () => {
     try {
       setIsLoading(true);
 
       // If user is not logged in, redirect to signup with return URL
       if (!user) {
-        navigate(`/signup?next=payment&plan=${type}`);
+        navigate(`/signup?next=payment&plan=unlimited`);
         return;
       }
 
       // For existing users, directly initiate checkout
-      console.log("Existing user selecting plan:", type);
+      console.log("Existing user selecting unlimited plan");
       
-      // Determine which price ID to use
-      const priceId = type === "one-time"
-        ? import.meta.env.VITE_PRICE_ONE_TIME
-        : import.meta.env.VITE_PRICE_UNLIMITED;
+      // Use the unlimited plan price ID
+      const priceId = import.meta.env.VITE_PRICE_UNLIMITED;
 
-      console.log("Selected plan:", type, "with priceId:", priceId);
+      console.log("Selected unlimited plan with priceId:", priceId);
 
       if (!priceId) {
-        console.error("Missing price ID in environment variables");
+        console.error("Missing unlimited price ID in environment variables");
         toast({
           title: "Configuration Error",
           description: "Missing price information. Please contact support.",
@@ -70,7 +66,7 @@ export const PricingSection = () => {
         return;
       }
 
-      // Create checkout session directly for existing users
+      // Create checkout session for unlimited plan
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId }
       });
@@ -94,7 +90,7 @@ export const PricingSection = () => {
       }
 
     } catch (error) {
-      console.error("Error selecting plan:", error);
+      console.error("Error selecting unlimited plan:", error);
       toast({
         title: "Error",
         description: "There was a problem selecting the plan. Please try again.",
@@ -102,6 +98,14 @@ export const PricingSection = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFreeTrial = () => {
+    if (!user) {
+      navigate('/signup');
+    } else {
+      navigate('/upload');
     }
   };
 
@@ -116,32 +120,37 @@ export const PricingSection = () => {
         <h2 className="text-2xl md:text-3xl lg:text-4xl font-poppins font-bold text-center mb-12 heading-gradient">
           Choose Your Plan
         </h2>
-        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-6 justify-center`}>
-          {/* One-time Card */}
+        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-6 justify-center max-w-4xl mx-auto`}>
+          {/* Free Trial Card */}
           <div className="glass-card rounded-xl p-6 hover:glow-border transition-all duration-300 flex-1">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="font-poppins font-bold text-xl mb-1">One-Time Scan</h3>
-                <p className="text-muted-foreground text-sm">Just trying it out</p>
+                <h3 className="font-poppins font-bold text-xl mb-1">Free Trial</h3>
+                <p className="text-muted-foreground text-sm">Try it out for free</p>
               </div>
-              <div className="text-2xl font-bold text-lilac">$3</div>
+              <div className="text-2xl font-bold text-lilac">Free</div>
             </div>
             <ul className="mb-6 space-y-3">
               <li className="flex items-center text-sm gap-2">
                 <CreditCard size={18} className="text-lilac" />
-                <span>Single outfit analysis</span>
+                <span>3 free outfit analyses</span>
+              </li>
+              <li className="flex items-center text-sm gap-2">
+                <CreditCard size={18} className="text-lilac" />
+                <span>Complete style recommendations</span>
               </li>
             </ul>
             <Button
-              onClick={() => handlePlanSelection("one-time")}
-              className="w-full bg-lilac hover:bg-lilac/90 text-white py-6 h-auto rounded-full"
+              onClick={handleFreeTrial}
+              variant="outline"
+              className="w-full border-lilac text-lilac hover:bg-lilac hover:text-white py-6 h-auto rounded-full"
               disabled={isLoading}
             >
-              {isLoading ? "Processing..." : "Choose One-Time"}
+              Start Free Trial
             </Button>
           </div>
 
-          {/* Subscription Card */}
+          {/* Unlimited Plan Card */}
           <div className="glass-card rounded-xl p-6 hover:glow-border transition-all duration-300 relative overflow-hidden flex-1">
             <div className="absolute top-0 right-0 bg-gradient-to-r from-lilac to-neonBlue text-xs px-3 py-1 font-medium text-white">
               BEST VALUE
@@ -161,9 +170,17 @@ export const PricingSection = () => {
                 <CreditCard size={18} className="text-lilac" />
                 <span>Unlimited outfit analyses</span>
               </li>
+              <li className="flex items-center text-sm gap-2">
+                <CreditCard size={18} className="text-lilac" />
+                <span>Priority feedback</span>
+              </li>
+              <li className="flex items-center text-sm gap-2">
+                <CreditCard size={18} className="text-lilac" />
+                <span>Advanced style recommendations</span>
+              </li>
             </ul>
             <Button
-              onClick={() => handlePlanSelection("subscription")}
+              onClick={handleUnlimitedPlan}
               className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
               disabled={isLoading}
             >
