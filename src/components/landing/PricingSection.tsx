@@ -167,7 +167,7 @@ export const PricingSection = () => {
               className="w-full bg-gradient-to-r from-lilac to-neonBlue text-white py-6 h-auto rounded-full hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
               disabled={isLoading}
             >
-              {isLoading ? "Processing..." : "Choose Unlimited"}
+              {isLoading ? "Processing..." : "Choose Plan"}
             </Button>
           </div>
         </div>
