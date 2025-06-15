@@ -3,22 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const fetchUserSubscription = async (userId: string) => {
   try {
-    // Try to query user_subscriptions table directly with raw SQL to avoid TypeScript issues
-    const { data: subscriptionData, error: subscriptionError } = await supabase
-      .rpc('sql', { 
-        query: `
-          SELECT * FROM user_subscriptions 
-          WHERE user_id = $1 
-          AND status = 'active' 
-          AND current_period_end > NOW()
-        `,
-        params: [userId]
-      });
-
-    return { subscriptionData: subscriptionData?.[0] || null, subscriptionError };
+    // For now, since user_subscriptions table doesn't exist in the types,
+    // we'll return null for subscription data
+    // This will be updated when the subscription table is properly set up
+    return { subscriptionData: null, subscriptionError: null };
   } catch (error) {
     console.error('Error in fetchUserSubscription:', error);
-    // If table doesn't exist or function doesn't exist, return no subscription
     return { subscriptionData: null, subscriptionError: null };
   }
 };

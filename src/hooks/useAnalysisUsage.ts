@@ -2,6 +2,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchUserCredits, fetchUserUploads, useAnalysisCredit, recordFreeTrialUsage } from '@/services/userPlanService';
 import { checkSubscriptionStatus } from '@/services/subscriptionService';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useAnalysisUsage = () => {
   const { user } = useAuth();
