@@ -117,6 +117,7 @@ const Upload = () => {
           onReset={resetStateAndClearAnalysis}
           onPurchase={handlePurchase}
           hasAccess={hasAccess()}
+          uploadedImage={preview} // Pass the preview image
         />
       )}
       

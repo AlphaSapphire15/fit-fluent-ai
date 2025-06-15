@@ -9,17 +9,40 @@ interface ResultsDisplayProps {
   onReset: () => void;
   onPurchase: () => void;
   hasAccess: boolean;
+  uploadedImage?: string; // Add image prop
 }
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   analysisResult,
   onReset,
   onPurchase,
-  hasAccess
+  hasAccess,
+  uploadedImage
 }) => {
   return (
     <div className="space-y-6">
+      {/* Show uploaded image */}
+      {uploadedImage && (
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <img
+              src={uploadedImage}
+              alt="Your analyzed outfit"
+              className="w-48 h-auto object-cover rounded-lg border border-white/10"
+            />
+            {/* Show score overlay on image */}
+            <div className="absolute top-4 right-4 w-16 h-16 rounded-full flex items-center justify-center bg-black/80 backdrop-blur-sm text-white border border-lilac">
+              <div className="text-center">
+                <span className="text-xl font-bold">{analysisResult.score}</span>
+                <span className="text-sm">/100</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <AnalysisResult {...analysisResult} />
+      
       <div className="flex gap-4 justify-center">
         <Button
           onClick={onReset}
