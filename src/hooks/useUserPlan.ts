@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchUserCredits, fetchUserUploads } from '@/services/userPlanService';
+import { checkSubscriptionStatus } from '@/services/subscriptionService';
 import { calculatePlanType, getDisplayText, checkHasAccess } from '@/utils/planCalculations';
 import { useAnalysisUsage } from '@/hooks/useAnalysisUsage';
 import type { UserPlanStatus } from '@/types/userPlan';
@@ -35,11 +36,15 @@ export const useUserPlan = () => {
       console.log("User ID:", user.id);
       console.log("User Email:", user.email);
       
+      // Check for active subscription FIRST
+      const hasActiveSubscription = await checkSubscriptionStatus(user.id);
+      console.log("Has active subscription:", hasActiveSubscription);
+
       // Check user credits
       const { creditsData, creditsError } = await fetchUserCredits(user.id);
       console.log("Credits query result:", { creditsData, creditsError });
 
-      // Check if user has made any uploads
+      // Check if user has made any uploads (free trial usage)
       const { uploadsData, uploadsError } = await fetchUserUploads(user.id);
       console.log("Uploads query result:", { uploadsData, uploadsError });
 
@@ -48,16 +53,17 @@ export const useUserPlan = () => {
       const hasCredits = creditsCount > 0;
 
       console.log("=== PLAN CALCULATION ===");
+      console.log("Has active subscription:", hasActiveSubscription);
       console.log("Has used free trial:", hasUsedFreeTrial);
       console.log("Credits count:", creditsCount);
       console.log("Has credits:", hasCredits);
 
-      const planType = calculatePlanType(hasCredits, hasUsedFreeTrial);
+      const planType = calculatePlanType(hasActiveSubscription, hasCredits, hasUsedFreeTrial);
 
       const newPlanStatus = {
         planType,
         hasUsedFreeTrial,
-        subscriptionActive: hasCredits,
+        subscriptionActive: hasActiveSubscription,
         subscriptionEndDate: null,
         loading: false,
       };

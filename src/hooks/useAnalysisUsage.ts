@@ -1,6 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchUserCredits, fetchUserUploads, useAnalysisCredit, recordFreeTrialUsage } from '@/services/userPlanService';
+import { checkSubscriptionStatus } from '@/services/subscriptionService';
 
 export const useAnalysisUsage = () => {
   const { user } = useAuth();
@@ -21,7 +22,16 @@ export const useAnalysisUsage = () => {
       // Wait a moment for state to update
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Re-fetch the latest status after refresh
+      // Check for active subscription FIRST (unlimited access)
+      const hasActiveSubscription = await checkSubscriptionStatus(user.id);
+      console.log("Has active subscription:", hasActiveSubscription);
+
+      if (hasActiveSubscription) {
+        console.log("User has unlimited subscription - allowing analysis");
+        return true;
+      }
+
+      // If no subscription, check credits and free trial
       const { creditsData } = await fetchUserCredits(user.id);
       const { uploadsData } = await fetchUserUploads(user.id);
 
@@ -33,7 +43,7 @@ export const useAnalysisUsage = () => {
 
       // Check if user has access
       if (!hasCredits && hasUsedFreeTrial) {
-        console.log("No access available - no credits and trial used");
+        console.log("No access available - no subscription, no credits, and trial used");
         return false;
       }
 

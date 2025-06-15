@@ -8,7 +8,6 @@ import PlanPurchasePrompt from "@/components/upload/PlanPurchasePrompt";
 import UploadInterface from "@/components/upload/UploadInterface";
 import ResultsDisplay from "@/components/upload/ResultsDisplay";
 import LoadingScreen from "@/components/upload/LoadingScreen";
-import DebugSection from "@/components/upload/DebugSection";
 import AnalysisDialog from "@/components/upload/AnalysisDialog";
 import FileInput from "@/components/upload/FileInput";
 import { usePaymentHandler } from "@/hooks/usePaymentHandler";
@@ -89,12 +88,6 @@ const Upload = () => {
   return (
     <PageContainer showBackButton>
       <UploadHeader planStatus={statusDisplay} />
-
-      <DebugSection 
-        planType={planType}
-        hasAccess={hasAccess()}
-        onRefreshPlan={refreshPlanStatus}
-      />
 
       {!analysisResult ? (
         <div className="max-w-2xl mx-auto">

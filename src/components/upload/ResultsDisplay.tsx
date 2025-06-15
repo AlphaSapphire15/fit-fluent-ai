@@ -23,7 +23,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       <div className="flex gap-4 justify-center">
         <Button
           onClick={onReset}
-          className="bg-lilac hover:bg-lilac/90 text-white py-6 h-auto text-lg rounded-full"
+          className="bg-lilac hover:bg-lilac/90 text-white py-6 h-auto text-lg rounded-full font-semibold"
         >
           Upload Another Fit
         </Button>
@@ -31,7 +31,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           <Button
             onClick={onPurchase}
             variant="outline"
-            className="py-6 h-auto text-lg rounded-full border-neonBlue text-neonBlue hover:bg-neonBlue hover:text-white"
+            className="py-6 h-auto text-lg rounded-full border-2 border-neonBlue text-neonBlue hover:bg-neonBlue hover:text-white font-semibold"
           >
             Get Unlimited Plan
           </Button>
