@@ -57,7 +57,7 @@ const UnlimitedPlanCard: React.FC<UnlimitedPlanCardProps> = ({ onSelectPlan, isL
           disabled={isLoading}
           size="lg"
         >
-          {isLoading ? "Processing..." : "Choose Unlimited Plan"}
+          {isLoading ? "Processing..." : "Choose Plan"}
         </Button>
       </CardFooter>
     </Card>
