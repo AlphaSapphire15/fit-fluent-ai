@@ -28,20 +28,20 @@ const AnalysisResult = ({ score, styleCore, strengths, suggestion }: AnalysisRes
             {strengths && strengths.length > 0 ? (
               strengths.map((strength, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
+                  <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5 fill-current" />
                   <span>{strength}</span>
                 </li>
               ))
             ) : (
               <li className="flex items-start gap-2">
-                <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5" />
+                <CheckCircle size={18} className="text-lilac shrink-0 mt-0.5 fill-current" />
                 <span>Great overall style balance</span>
               </li>
             )}
           </ul>
         </div>
 
-        {/* Tips to Elevate - Always show this section */}
+        {/* Tips to Elevate - Always show this section with proper title formatting */}
         <div>
           <h3 className="font-satoshi font-bold text-lg mb-4">Tip to Elevate</h3>
           <ul className="space-y-3">

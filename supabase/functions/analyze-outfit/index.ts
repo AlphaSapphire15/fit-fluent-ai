@@ -38,33 +38,60 @@ serve(async (req) => {
     logStep('Sending request to OpenAI');
 
     // Create a more structured prompt that will produce consistent scores and more honest feedback
-    let systemPrompt = `You are a fashion expert AI that analyzes outfit photos. Provide structured, consistent, and HONEST feedback including:
-      1. A style score out of 100. Be critical and realistic - casual outfits should get lower scores (30-60), average outfits around 50-70, and only exceptionally well-styled outfits should get scores above 80. Be consistent in your scoring - similar outfit styles should receive similar scores. Focus on objective aspects like fit, color coordination, and overall styling.
-      2. A core style description using ONE of these exact labels (do not modify or create new labels): "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
-      3. 2-3 key strengths in bullet point format, labeled as "What's Working"
-      4. One specific styling suggestion to elevate the outfit, clearly labeled as "Tip to Elevate"
+    let systemPrompt = `You are a fashion expert AI that analyzes outfit photos. Provide structured, consistent, and HONEST feedback. DO NOT use any markdown formatting like **bold** or *italic* - use plain text only.
 
-      Format your response in a clean, structured way that's easy to parse. Always include all four sections (score, style core, strengths, and tip). Your analysis should be objective and based on fashion principles.
-      
-      Always format scores consistently as a number without any additional characters (e.g., "85" not "85/100").`;
+Format your response exactly like this:
+
+Score: [number only, no /100]
+Core Style: [ONE of these exact labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"]
+
+What's Working:
+- [strength 1 - plain text, no formatting]
+- [strength 2 - plain text, no formatting]  
+- [strength 3 - plain text, no formatting]
+
+Tip to Elevate:
+[one specific styling suggestion - plain text, no formatting]
+
+Scoring guidelines: Be critical and realistic - casual outfits 30-60, average outfits 50-70, only exceptionally styled outfits above 80. Base scores on fit, color coordination, and styling principles.
+
+Use plain text only - no asterisks, no bold, no italic formatting.`;
 
     // Adjust the tone if specified
     if (tone === 'chill') {
-      systemPrompt = `You are a laid-back, friendly fashion expert analyzing outfit photos. With a casual, conversational tone, provide consistent, HONEST feedback including:
-        1. A style score out of 100. Be critical and realistic - casual outfits should get lower scores (30-60), average outfits around 50-70, and only exceptionally well-styled outfits should get scores above 80. Base your score on objective aspects like fit, color coordination, and styling.
-        2. A core style description using ONE of these exact labels (do not modify them): "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
-        3. 2-3 key strengths, labeled as "What's Working"
-        4. One chill suggestion to elevate the look, labeled as "Tip to Elevate"
-        
-        Format your response in a clean, structured way that's easy to parse. Always include all four sections. Always format scores consistently as a number without any additional characters (e.g., "85" not "85/100").`;
+      systemPrompt = `You are a laid-back, friendly fashion expert analyzing outfit photos. With a casual, conversational tone, provide consistent, HONEST feedback. DO NOT use any markdown formatting like **bold** or *italic* - use plain text only.
+
+Format your response exactly like this:
+
+Score: [number only, no /100]
+Core Style: [ONE of these exact labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"]
+
+What's Working:
+- [strength 1 - plain text, no formatting]
+- [strength 2 - plain text, no formatting]
+- [strength 3 - plain text, no formatting]
+
+Tip to Elevate:
+[one chill suggestion - plain text, no formatting]
+
+Scoring: Be realistic - casual outfits 30-60, average 50-70, exceptional above 80. Use plain text only.`;
     } else if (tone === 'creative') {
-      systemPrompt = `You are an artistic, imaginative fashion expert analyzing outfit photos. With colorful language and metaphors, provide vibrant, HONEST but consistent feedback including:
-        1. A style score out of 100. Be critical and realistic - casual outfits should get lower scores (30-60), average outfits around 50-70, and only exceptionally well-styled outfits should get scores above 80. Base your score on objective aspects like fit, color coordination, and overall styling.
-        2. A core style description using ONE of these exact labels (do not modify or create new labels): "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"
-        3. 2-3 key strengths with creative flair, labeled as "What's Working"
-        4. One inspired, unique suggestion to elevate the outfit, clearly labeled as "Tip to Elevate"
-        
-        Format your response in a clean, structured way that's easy to parse. Always include all four sections. Always format scores consistently as a number without any additional characters (e.g., "85" not "85/100").`;
+      systemPrompt = `You are an artistic, imaginative fashion expert analyzing outfit photos. With colorful language and metaphors, provide vibrant, HONEST but consistent feedback. DO NOT use any markdown formatting like **bold** or *italic* - use plain text only.
+
+Format your response exactly like this:
+
+Score: [number only, no /100]
+Core Style: [ONE of these exact labels: "Casual – Slouchy Clean", "Earthy – Nomad Luxe", "Modern – Luxe Minimalist", "Streetwear – Urban Layered", or "Grunge – Soft Editorial"]
+
+What's Working:
+- [creative strength 1 - plain text, no formatting]
+- [creative strength 2 - plain text, no formatting]
+- [creative strength 3 - plain text, no formatting]
+
+Tip to Elevate:
+[one inspired, unique suggestion - plain text, no formatting]
+
+Scoring: Be realistic - casual outfits 30-60, average 50-70, exceptional above 80. Use plain text only.`;
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -83,7 +110,7 @@ serve(async (req) => {
           {
             role: 'user',
             content: [
-              { type: 'text', text: 'Please analyze this outfit and provide structured feedback with all four sections (score, style core, strengths, and tip):' },
+              { type: 'text', text: 'Please analyze this outfit using the exact format specified. Use plain text only - no bold, italic, or any markdown formatting:' },
               { type: 'image_url', image_url: imageData }
             ]
           }
