@@ -44,7 +44,7 @@ const FreeTrialCard: React.FC<FreeTrialCardProps> = ({ onStartTrial }) => {
           Start Free Trial (3 Credits)
         </Button>
       </CardFooter>
-    </CardFooter>
+    </Card>
   );
 };
 
