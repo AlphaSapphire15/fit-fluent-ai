@@ -17,7 +17,7 @@ import { useUploadLogic } from "@/hooks/useUploadLogic";
 const Upload = () => {
   const navigate = useNavigate();
   const { tone, setTone } = useStyle();
-  const { hasAccess, refreshPlanStatus, loading: planLoading, planType } = useUserPlan();
+  const { hasAccess, refreshPlanStatus, loading: planLoading, planType, subscriptionActive } = useUserPlan();
   const { isRefreshingPlan } = usePaymentHandler();
   
   const {
@@ -71,9 +71,14 @@ const Upload = () => {
   }
 
   const getStatusDisplay = () => {
+    // Show subscription status if active
+    if (subscriptionActive) {
+      return { text: 'Unlimited Plan', color: 'text-green-600' };
+    }
+    
     switch (planType) {
       case 'unlimited':
-        return { text: 'Unlimited Plan', color: 'text-green-600' };
+        return { text: 'Credits Available', color: 'text-blue-600' };
       case 'free_trial':
         return { text: 'Free Trial Available', color: 'text-blue-600' };
       case 'expired':

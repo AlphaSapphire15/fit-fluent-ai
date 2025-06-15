@@ -82,7 +82,9 @@ serve(async (req) => {
           const { error: subscriptionError } = await supabase.rpc('update_subscription_status', {
             p_user_id: userId,
             p_stripe_subscription_id: subscription.id,
+            p_stripe_customer_id: subscription.customer as string,
             p_status: subscription.status,
+            p_plan_type: 'unlimited',
             p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
             p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
           });
@@ -100,7 +102,7 @@ serve(async (req) => {
           
           const { error: creditsError } = await supabase.rpc('add_user_credits', {
             user_uuid: userId,
-            amount: 10 // One-time purchase gets 10 credits
+            amount: 1 // One-time purchase gets 1 credit
           });
 
           if (creditsError) {
@@ -148,7 +150,9 @@ serve(async (req) => {
             const { error: subscriptionError } = await supabase.rpc('update_subscription_status', {
               p_user_id: userId,
               p_stripe_subscription_id: subscription.id,
+              p_stripe_customer_id: subscription.customer as string,
               p_status: subscription.status,
+              p_plan_type: 'unlimited',
               p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
               p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
             });
@@ -204,7 +208,9 @@ serve(async (req) => {
           const { error: subscriptionError } = await supabase.rpc('update_subscription_status', {
             p_user_id: userId,
             p_stripe_subscription_id: subscription.id,
+            p_stripe_customer_id: subscription.customer as string,
             p_status: subscription.status,
+            p_plan_type: 'unlimited',
             p_current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
             p_current_period_end: new Date(subscription.current_period_end * 1000).toISOString()
           });
