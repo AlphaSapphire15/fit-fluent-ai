@@ -169,7 +169,7 @@ const DragAndDrop: React.FC<DragAndDropProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="text-sm w-full bg-white/80"
+                className="text-sm w-full bg-black/60 border-gray-600 text-white hover:bg-black/80 hover:text-white"
                 onClick={handleChangePhoto}
               >
                 Change Photo
