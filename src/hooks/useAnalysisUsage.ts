@@ -27,11 +27,36 @@ export const useAnalysisUsage = () => {
       console.log("Has active subscription:", hasActiveSubscription);
 
       if (hasActiveSubscription) {
-        console.log("User has unlimited subscription - allowing analysis");
-        return true;
+        // Check if it's truly unlimited (subscription) or just credits
+        const { creditsData } = await fetchUserCredits(user.id);
+        const hasCredits = creditsData && creditsData.credits > 0;
+        
+        // If user has credits, use them. If unlimited subscription, allow free usage
+        if (hasCredits) {
+          console.log("User has credits - using credit system");
+          const { data, error } = await useAnalysisCredit(user.id);
+
+          if (error) {
+            console.error('Error using credit:', error);
+            return false;
+          }
+
+          if (!data) {
+            console.log("No credits available (RPC returned false)");
+            return false;
+          }
+
+          console.log("Successfully used credit");
+          await refreshPlanStatus();
+          return true;
+        } else {
+          // This would be for unlimited subscription users
+          console.log("User has unlimited subscription - allowing analysis");
+          return true;
+        }
       }
 
-      // If no subscription, check credits and free trial
+      // Check if user has used free trial (now 3 credits instead of 1 analysis)
       const { creditsData } = await fetchUserCredits(user.id);
       const { uploadsData } = await fetchUserUploads(user.id);
 
@@ -41,18 +66,10 @@ export const useAnalysisUsage = () => {
       console.log("Fresh check - Has credits:", hasCredits, "Credits count:", creditsData?.credits);
       console.log("Fresh check - Has used trial:", hasUsedFreeTrial);
 
-      // Check if user has access
-      if (!hasCredits && hasUsedFreeTrial) {
-        console.log("No access available - no subscription, no credits, and trial used");
-        return false;
-      }
-
-      // If user has credits, use the Supabase function to deduct a credit
+      // If user has credits, use them
       if (hasCredits) {
         console.log("User has credits - using credit system");
         const { data, error } = await useAnalysisCredit(user.id);
-
-        console.log("Credit usage result:", { data, error });
 
         if (error) {
           console.error('Error using credit:', error);
@@ -65,23 +82,45 @@ export const useAnalysisUsage = () => {
         }
 
         console.log("Successfully used credit");
-        // Refresh plan status after using credit
         await refreshPlanStatus();
         return true;
       }
 
-      // If user has free trial available, record usage in uploads
+      // If user hasn't used free trial, give them 3 credits
       if (!hasUsedFreeTrial) {
-        console.log("Using free trial");
-        const { error } = await recordFreeTrialUsage(user.id);
+        console.log("Giving user 3 free trial credits");
+        
+        // Add 3 credits for free trial
+        const { error: addCreditsError } = await supabase.rpc('add_user_credits', {
+          user_uuid: user.id,
+          amount: 3
+        });
 
-        if (error) {
-          console.error('Error recording free trial usage:', error);
+        if (addCreditsError) {
+          console.error('Error adding free trial credits:', addCreditsError);
           return false;
         }
 
-        console.log("Successfully used free trial");
-        // Refresh plan status after using free trial
+        // Record that free trial was used
+        const { error: recordError } = await recordFreeTrialUsage(user.id);
+        if (recordError) {
+          console.error('Error recording free trial usage:', recordError);
+        }
+
+        // Now use one credit
+        const { data, error } = await useAnalysisCredit(user.id);
+
+        if (error) {
+          console.error('Error using credit after free trial setup:', error);
+          return false;
+        }
+
+        if (!data) {
+          console.log("No credits available after free trial setup");
+          return false;
+        }
+
+        console.log("Successfully used credit from free trial");
         await refreshPlanStatus();
         return true;
       }
