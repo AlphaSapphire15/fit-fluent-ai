@@ -10,15 +10,15 @@ interface FreeTrialCardProps {
 
 const FreeTrialCard: React.FC<FreeTrialCardProps> = ({ onStartTrial }) => {
   return (
-    <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden">
-      <CardHeader>
+    <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden flex flex-col h-full">
+      <CardHeader className="flex-shrink-0">
         <CardTitle className="flex justify-between items-center">
           <span className="text-xl font-poppins">Free Trial</span>
           <span className="text-2xl font-bold text-lilac">Free</span>
         </CardTitle>
         <CardDescription>Get 3 outfit analyses to try it out</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <ul className="space-y-3">
           <li className="flex items-center gap-2">
             <CheckIcon size={18} className="text-lilac min-w-[18px]" />
@@ -38,7 +38,7 @@ const FreeTrialCard: React.FC<FreeTrialCardProps> = ({ onStartTrial }) => {
           </li>
         </ul>
       </CardContent>
-      <CardFooter className="pt-4">
+      <CardFooter className="pt-4 flex-shrink-0">
         <Button
           onClick={onStartTrial}
           variant="outline"

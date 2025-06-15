@@ -11,11 +11,11 @@ interface UnlimitedPlanCardProps {
 
 const UnlimitedPlanCard: React.FC<UnlimitedPlanCardProps> = ({ onSelectPlan, isLoading }) => {
   return (
-    <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden">
+    <Card className="glass-card hover:glow-border transition-all duration-300 relative overflow-hidden flex flex-col h-full">
       <div className="absolute top-0 right-0 bg-gradient-to-r from-lilac to-neonBlue text-xs px-3 py-1 font-medium text-white rounded-bl-lg">
         BEST VALUE
       </div>
-      <CardHeader className="pt-8">
+      <CardHeader className="pt-8 flex-shrink-0">
         <CardTitle className="flex justify-between items-center">
           <span className="text-xl font-poppins">Unlimited Plan</span>
           <div>
@@ -25,7 +25,7 @@ const UnlimitedPlanCard: React.FC<UnlimitedPlanCardProps> = ({ onSelectPlan, isL
         </CardTitle>
         <CardDescription>For serious style upgrades</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <ul className="space-y-3">
           <li className="flex items-center gap-2">
             <CheckIcon size={18} className="text-lilac min-w-[18px]" />
@@ -49,7 +49,7 @@ const UnlimitedPlanCard: React.FC<UnlimitedPlanCardProps> = ({ onSelectPlan, isL
           </li>
         </ul>
       </CardContent>
-      <CardFooter className="pt-4">
+      <CardFooter className="pt-4 flex-shrink-0">
         <Button
           onClick={onSelectPlan}
           variant="gradient"
