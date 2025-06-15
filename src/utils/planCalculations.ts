@@ -2,27 +2,22 @@
 import type { UserPlanStatus } from '@/types/userPlan';
 
 export const calculatePlanType = (
-  hasActiveSubscription: boolean,
-  hasCredits: boolean,
-  hasUsedFreeTrial: boolean
+  hasCreditsRecord: boolean,
+  creditsCount: number
 ): UserPlanStatus['planType'] => {
-  // Priority 1: Active subscription = unlimited access
-  if (hasActiveSubscription && !hasCredits) {
-    // True unlimited subscription (no credits needed)
-    return 'unlimited';
-  }
+  // Simplified logic:
+  // - No credits record = free_trial (new user)
+  // - Has credits > 0 = unlimited (can analyze)
+  // - Has credits = 0 = expired (used up free trial)
   
-  // Priority 2: Credits available (including from free trial)
-  if (hasCredits) {
-    return 'unlimited'; // Credits give access until depleted
-  }
-  
-  // Priority 3: Free trial available (user gets 3 credits)
-  if (!hasUsedFreeTrial) {
+  if (!hasCreditsRecord) {
     return 'free_trial';
   }
   
-  // No access
+  if (creditsCount > 0) {
+    return 'unlimited';
+  }
+  
   return 'expired';
 };
 
@@ -31,7 +26,7 @@ export const getDisplayText = (planType: UserPlanStatus['planType'], loading: bo
   
   switch (planType) {
     case 'unlimited':
-      return 'Unlimited Plan';
+      return 'Credits Available';
     case 'free_trial':
       return '3 Free Credits Available';
     case 'expired':

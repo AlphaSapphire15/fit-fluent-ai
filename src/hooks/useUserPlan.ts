@@ -1,9 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchUserCredits, fetchUserUploads } from '@/services/userPlanService';
-import { checkSubscriptionStatus } from '@/services/subscriptionService';
-import { calculatePlanType, getDisplayText, checkHasAccess } from '@/utils/planCalculations';
+import { supabase } from '@/integrations/supabase/client';
 import { useAnalysisUsage } from '@/hooks/useAnalysisUsage';
 import type { UserPlanStatus } from '@/types/userPlan';
 
@@ -34,36 +32,43 @@ export const useUserPlan = () => {
     try {
       console.log("=== FETCHING PLAN STATUS ===");
       console.log("User ID:", user.id);
-      console.log("User Email:", user.email);
       
-      // Check for active subscription FIRST
-      const hasActiveSubscription = await checkSubscriptionStatus(user.id);
-      console.log("Has active subscription:", hasActiveSubscription);
-
       // Check user credits
-      const { creditsData, creditsError } = await fetchUserCredits(user.id);
+      const { data: creditsData, error: creditsError } = await supabase
+        .from('user_credits')
+        .select('credits')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
       console.log("Credits query result:", { creditsData, creditsError });
 
-      // Check if user has made any uploads (free trial usage)
-      const { uploadsData, uploadsError } = await fetchUserUploads(user.id);
-      console.log("Uploads query result:", { uploadsData, uploadsError });
-
-      const hasUsedFreeTrial = !uploadsError && uploadsData && uploadsData.length > 0;
       const creditsCount = creditsData?.credits || 0;
       const hasCredits = creditsCount > 0;
+      const hasCreditsRecord = !!creditsData;
 
       console.log("=== PLAN CALCULATION ===");
-      console.log("Has active subscription:", hasActiveSubscription);
-      console.log("Has used free trial:", hasUsedFreeTrial);
+      console.log("Has credits record:", hasCreditsRecord);
       console.log("Credits count:", creditsCount);
       console.log("Has credits:", hasCredits);
 
-      const planType = calculatePlanType(hasActiveSubscription, hasCredits, hasUsedFreeTrial);
+      // Simple logic:
+      // - If no credits record exists: free_trial (will get 3 credits on first analysis)
+      // - If has credits > 0: unlimited (can analyze)
+      // - If has credits = 0: expired (used up free trial)
+      let planType: UserPlanStatus['planType'];
+      
+      if (!hasCreditsRecord) {
+        planType = 'free_trial'; // New user, will get 3 credits
+      } else if (hasCredits) {
+        planType = 'unlimited'; // Has credits to use
+      } else {
+        planType = 'expired'; // Used up all credits
+      }
 
       const newPlanStatus = {
         planType,
-        hasUsedFreeTrial,
-        subscriptionActive: hasActiveSubscription,
+        hasUsedFreeTrial: hasCreditsRecord, // If they have a record, they've used trial
+        subscriptionActive: false, // Simplified - no subscription logic for now
         subscriptionEndDate: null,
         loading: false,
       };
@@ -89,16 +94,26 @@ export const useUserPlan = () => {
   };
 
   const hasAccess = (): boolean => {
-    const access = checkHasAccess(planStatus.planType);
+    const access = planStatus.planType === 'unlimited' || planStatus.planType === 'free_trial';
     console.log("=== ACCESS CHECK ===");
     console.log("Plan type:", planStatus.planType);
     console.log("Has access:", access);
-    console.log("Subscription active:", planStatus.subscriptionActive);
     return access;
   };
 
   const getDisplayTextForPlan = (): string => {
-    return getDisplayText(planStatus.planType, planStatus.loading);
+    if (planStatus.loading) return 'Loading...';
+    
+    switch (planStatus.planType) {
+      case 'unlimited':
+        return 'Credits Available';
+      case 'free_trial':
+        return '3 Free Credits Available';
+      case 'expired':
+        return 'No credits remaining';
+      default:
+        return 'Unknown plan';
+    }
   };
 
   useEffect(() => {

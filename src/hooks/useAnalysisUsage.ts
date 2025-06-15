@@ -1,7 +1,5 @@
 
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchUserCredits, fetchUserUploads, useAnalysisCredit, recordFreeTrialUsage } from '@/services/userPlanService';
-import { checkSubscriptionStatus } from '@/services/subscriptionService';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useAnalysisUsage = () => {
@@ -14,122 +12,64 @@ export const useAnalysisUsage = () => {
     }
 
     try {
-      console.log("=== ATTEMPTING TO USE ANALYSIS ===");
+      console.log("=== STARTING ANALYSIS ATTEMPT ===");
+      console.log("User ID:", user.id);
       
-      // Refresh plan status first to get latest info
-      console.log("Refreshing plan status before analysis...");
+      // First check if user has any credits record
+      const { data: creditsData, error: creditsError } = await supabase
+        .from('user_credits')
+        .select('credits')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      console.log("Credits check result:", { creditsData, creditsError });
+
+      // If no credits record exists, this is a new user - give them 3 free credits
+      if (!creditsData) {
+        console.log("New user detected - granting 3 free trial credits");
+        
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert({
+            user_id: user.id,
+            credits: 3
+          });
+
+        if (insertError) {
+          console.error('Error creating credits record:', insertError);
+          return false;
+        }
+
+        console.log("Successfully granted 3 free credits to new user");
+      }
+
+      // Now attempt to use one credit
+      console.log("Attempting to use analysis credit...");
+      const { data: success, error: useError } = await supabase.rpc('use_analysis_credit', {
+        user_uuid: user.id
+      });
+
+      console.log("Use credit result:", { success, useError });
+
+      if (useError) {
+        console.error('Error using credit:', useError);
+        return false;
+      }
+
+      if (!success) {
+        console.log("No credits available - user needs to purchase more");
+        return false;
+      }
+
+      console.log("Successfully used analysis credit");
+      
+      // Refresh plan status to update UI
       await refreshPlanStatus();
       
-      // Wait a moment for state to update
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Check for active subscription FIRST (unlimited access)
-      const hasActiveSubscription = await checkSubscriptionStatus(user.id);
-      console.log("Has active subscription:", hasActiveSubscription);
+      return true;
 
-      if (hasActiveSubscription) {
-        // Check if it's truly unlimited (subscription) or just credits
-        const { creditsData } = await fetchUserCredits(user.id);
-        const hasCredits = creditsData && creditsData.credits > 0;
-        
-        // If user has credits, use them. If unlimited subscription, allow free usage
-        if (hasCredits) {
-          console.log("User has credits - using credit system");
-          const { data, error } = await useAnalysisCredit(user.id);
-
-          if (error) {
-            console.error('Error using credit:', error);
-            return false;
-          }
-
-          if (!data) {
-            console.log("No credits available (RPC returned false)");
-            return false;
-          }
-
-          console.log("Successfully used credit");
-          await refreshPlanStatus();
-          return true;
-        } else {
-          // This would be for unlimited subscription users
-          console.log("User has unlimited subscription - allowing analysis");
-          return true;
-        }
-      }
-
-      // Check if user has used free trial (now 3 credits instead of 1 analysis)
-      const { creditsData } = await fetchUserCredits(user.id);
-      const { uploadsData } = await fetchUserUploads(user.id);
-
-      const hasUsedFreeTrial = uploadsData && uploadsData.length > 0;
-      const hasCredits = creditsData && creditsData.credits > 0;
-
-      console.log("Fresh check - Has credits:", hasCredits, "Credits count:", creditsData?.credits);
-      console.log("Fresh check - Has used trial:", hasUsedFreeTrial);
-
-      // If user has credits, use them
-      if (hasCredits) {
-        console.log("User has credits - using credit system");
-        const { data, error } = await useAnalysisCredit(user.id);
-
-        if (error) {
-          console.error('Error using credit:', error);
-          return false;
-        }
-
-        if (!data) {
-          console.log("No credits available (RPC returned false)");
-          return false;
-        }
-
-        console.log("Successfully used credit");
-        await refreshPlanStatus();
-        return true;
-      }
-
-      // If user hasn't used free trial, give them 3 credits
-      if (!hasUsedFreeTrial) {
-        console.log("Giving user 3 free trial credits");
-        
-        // Add 3 credits for free trial
-        const { error: addCreditsError } = await supabase.rpc('add_user_credits', {
-          user_uuid: user.id,
-          amount: 3
-        });
-
-        if (addCreditsError) {
-          console.error('Error adding free trial credits:', addCreditsError);
-          return false;
-        }
-
-        // Record that free trial was used
-        const { error: recordError } = await recordFreeTrialUsage(user.id);
-        if (recordError) {
-          console.error('Error recording free trial usage:', recordError);
-        }
-
-        // Now use one credit
-        const { data, error } = await useAnalysisCredit(user.id);
-
-        if (error) {
-          console.error('Error using credit after free trial setup:', error);
-          return false;
-        }
-
-        if (!data) {
-          console.log("No credits available after free trial setup");
-          return false;
-        }
-
-        console.log("Successfully used credit from free trial");
-        await refreshPlanStatus();
-        return true;
-      }
-
-      console.log("No access method available");
-      return false;
     } catch (error) {
-      console.error('Error using analysis:', error);
+      console.error('Error in useAnalysis:', error);
       return false;
     }
   };
